@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+	<record id="purchase_leader_procurement_id" model="res.groups">
+		<field name="name">Procurement Manager(Purchase) </field>
+		<field name="category_id" ref="base.module_category_hidden"/>
+		<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]"/>
+		
+	</record>
+	<record id="purchase_finance_id" model="res.groups">
+		<field name="name">Finance Manager(Purchase) </field>
+		<field name="category_id" ref="base.module_category_hidden"/>
+		<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]"/>
+		
+	</record>
+	<record id="purchase_operation_id" model="res.groups">
+		<field name="name">Operations Manager(Purchase) </field>
+		<field name="category_id" ref="base.module_category_hidden"/>
+		<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]"/>
+		
+	</record>
+
+	<record id="purchase_director_id" model="res.groups">
+		<field name="name">Executive Director(Purchase) </field>
+		<field name="category_id" ref="base.module_category_hidden"/>
+		<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]"/>
+		
+	</record>
+	</data>
+</odoo>

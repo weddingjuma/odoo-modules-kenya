@@ -1,0 +1,154 @@
+<?xml version="1.0" ?>
+<odoo>
+    <!-- form view -->
+    <record id="purchase_internal_requisition_form_view" model="ir.ui.view">
+        <field name="name">purchase.internal.requisition.form.view</field>
+        <field name="model">purchase.internal.requisition</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="button_confirm" type="object" states="draft" string="Confirm IRF" id="draft_confirm" />
+                    <button name="button_confirm" type="object" states="sent" string="Confirm IRF" class="oe_highlight" id="bid_confirm" />
+                    <button name="button_approve" type="object" states="to approve" string="Approve IRF" class="oe_highlight" groups="stock.group_stock_manager" />
+                    <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
+                    <button name="button_cancel" states="to approve,draft,purchase" string="Cancel" type="object" />
+                    <button name="load_duplicate_prod" type="object" string="Load Duplicate" class="oe_highlight" groups="base.group_system" />
+                    <button name="load_file_prod" type="object" string="Load from file" class="oe_highlight" groups="base.group_system"/>
+                    <button name="button_done" type="object" string="Lock" states="purchase" />
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="to approve,draft,purchase" readonly="1" />
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label string="Internal Requisition Form " attrs="{'invisible': [('state','not in',('draft','sent'))]}" />
+                        <label string="Internal Requisition Order" attrs="{'invisible': [('state','in',('draft','sent'))]}" />
+                        <h2>
+                            <field name="name" readonly="1" />
+                        </h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="ir_dept_id" />
+                            <field name="ir_dept_head_id" />
+                        </group>
+                        <group>
+                            <field name="ir_req_date" />
+                            <field name="ir_dept_code" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="items" string="Items">
+                            <field name="item_ids" widget="one2many_list">
+                                <tree editable="bottom" delete="1" colors="red:qty_available &lt; product_qty">
+                                    <field name="item_id" 
+                                    domain="[('type', '!=', 'service')]"
+                                     />
+                                    <field name="qty_available"/>
+                                    <field name="product_qty"/>
+                                    <field name="comment" />
+                                </tree>
+                            </field>
+                            <div class="oe_clear" />
+                        </page>
+                        
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" />
+                    <field name="message_ids" widget="mail_thread" />
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="purchase_division_form_view" model="ir.ui.view">
+        <field name="name">purchase.division.form.view</field>
+        <field name="model">purchase.division</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label string="Division" />
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" />
+                        </group>
+                        <group>
+                            <field name="div_code" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="div_departments" string="Departments">
+                            <field name="department_ids" widget="one2many_list">
+                                <tree editable="bottom">
+                                    <field name="name" />
+                                    <field name="dep_code" />
+                                    <field name="dep_head_id" />
+                                    <field name="location"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- tree view -->
+    <record id="purchase_internal_requisition_tree_view" model="ir.ui.view">
+        <field name="name">purchase.internal.requisition.tree.view</field>
+        <field name="model">purchase.internal.requisition</field>
+        <field name="arch" type="xml">
+            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Internal Requisition Orders">
+                <field name="message_unread" invisible="1" />
+                <field name="name" />
+                <field name="ir_dept_id" />
+                <field name="ir_dept_head_id" />
+                <field name="ir_dept_code" />
+                <field name="ir_req_date" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+    <record id="purchase_division_tree_view" model="ir.ui.view">
+        <field name="name">purchase.division.tree.view</field>
+        <field name="model">purchase.division</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="div_code" />
+            </tree>
+        </field>
+    </record>
+    
+    
+    <!-- Actions -->
+    <record id="internal_requisition_action" model="ir.actions.act_window">
+        <field name="name">Internal Requisition</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.internal.requisition</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_type">form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new internal requisition. 
+            </p>
+        </field>
+    </record>
+    <record id="purchase_division_action" model="ir.actions.act_window">
+        <field name="name">Division</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">purchase.division</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_type">form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new Division. 
+            </p>
+        </field>
+    </record>
+    <!-- Menus  -->
+    <menuitem action="internal_requisition_action" id="menu_internal_requisition_action" parent="purchase.menu_procurement_management" sequence="7" />
+    <menuitem action="purchase_division_action" id="menu_division_action" parent="purchase.menu_procurement_management" sequence="9" />
+    
+</odoo>

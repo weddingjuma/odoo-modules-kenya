@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- template to load external css and inheriting report.minimal_layout functionalities -->
+    <template id="report_kijabe_minimal_layout" inherit_id="report.minimal_layout">
+        <xpath expr="//head" position="inside">
+            <link rel="stylesheet" href="/kijabe_purchase_ext/static/css/kijabe_po_custom.css" />
+        </xpath>
+    </template>
+    <!-- template to inherit purchase order report then load a logo to it and apply external css -->
+    <template id="report_po_document_inherit" inherit_id="purchase.report_purchaseorder_document">
+        <xpath expr="//table" position="before">
+            <div class="watermark">
+                <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' %res_company.logo" />
+            </div>
+        </xpath>
+    </template>
+    <!-- report -->
+    <template id="purchase_internal_requisition_doc">
+        <t t-call="report.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="report.external_layout">
+                    <div class="page">
+                        <!-- <div class="oe_structure" /> -->
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <strong>Requester information :</strong>
+                                <div t-if="o.ir_dept_id">
+                                    <p t-if="o.ir_div_id">
+                                        Division:
+                                        <span t-field="o.ir_div_id" />
+                                    </p>
+                                    <p t-if="o.ir_dept_id">
+                                        Department:
+                                        <span t-field="o.ir_dept_id" />
+                                    </p>
+                                    <p t-if="o.ir_dept_head_id">
+                                        Department Head:
+                                        <span t-field="o.ir_dept_head_id" />
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <h1>Internal Requisition Report</h1>
+                        <div class="row mt32 mb32">
+                            <div t-if="o.name" class="col-xs-3">
+                                <strong>IRF Reference:</strong>
+                                <p t-field="o.name" />
+                            </div>
+                            <div t-if="o.ir_req_date" class="col-xs-3">
+                                <strong>IRF Date:</strong>
+                                <p t-field="o.ir_req_date" />
+                            </div>
+                            <div t-if="o.state" class="col-xs-3">
+                                <strong>Approval state:</strong>
+                                <p t-field="o.state" />
+                            </div>
+                        </div>
+                        <div class="watermark">
+                            <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' %res_company.logo" />
+                        </div>
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <strong>Items</strong>
+                                    </th>
+                                    <th>
+                                        <strong>Quantity</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>Comment</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.item_ids" t-as="irf">
+                                    <td>
+                                        <span t-field="irf.item_id" />
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="irf.product_qty" />
+                                        <span t-field="irf.item_id.uom_id" />
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-field="irf.comment" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    <report id="purchase_internal_requisition_report" string="Internal Requisition" model="purchase.internal.requisition" report_type="qweb-pdf" attachment_use="True" file="kijabe_purchase_ext.purchase_internal_requisition_doc" name="kijabe_purchase_ext.purchase_internal_requisition_doc" />
+</odoo>

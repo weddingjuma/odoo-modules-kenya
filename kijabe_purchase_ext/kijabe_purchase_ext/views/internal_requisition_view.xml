@@ -8,14 +8,15 @@
             <form>
                 <header>
                     <button name="button_confirm" type="object" states="draft" string="Confirm IRF" id="draft_confirm" />
-                    <button name="button_confirm" type="object" states="sent" string="Confirm IRF" class="oe_highlight" id="bid_confirm"/>
+                    <button name="button_confirm" type="object" states="sent" string="Confirm IRF" class="oe_highlight" id="bid_confirm" />
                     <button name="button_approve" type="object" states="to approve" string="Approve IRF" class="oe_highlight" groups="stock.group_stock_manager" />
                     <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
-                    <button name="button_cancel" states="hod,procurement,to approve,draft,purchase" string="Cancel" type="object" />
+                    <button name="button_cancel" states="to approve,draft,purchase" string="Cancel" type="object" />
+                    <button name="load_duplicate_prod" type="object" string="Load Duplicate" class="oe_highlight" groups="base.group_system" />
+                    <button name="load_file_prod" type="object" string="Load from file" class="oe_highlight" groups="base.group_system"/>
                     <button name="button_done" type="object" string="Lock" states="purchase" />
-                    <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="procurement" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
-                    <button name="hod_approval" type="object" string="HOD Approval" states="hod" groups="kijabe_purchase_ext.hod_id" />
-                    <field name="state" widget="statusbar" statusbar_visible="hod,procurement,to approve,draft,purchase" readonly="1" />
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="to approve,draft,purchase" readonly="1" />
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -98,7 +99,7 @@
         <field name="name">purchase.internal.requisition.tree.view</field>
         <field name="model">purchase.internal.requisition</field>
         <field name="arch" type="xml">
-            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Internal Requisition Orders" default_order='name desc'>
+            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Internal Requisition Orders">
                 <field name="message_unread" invisible="1" />
                 <field name="name" />
                 <field name="ir_dept_id" />

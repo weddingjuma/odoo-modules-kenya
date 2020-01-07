@@ -27,8 +27,6 @@ class internal_requisition(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'IRF Sent'),
-        ('hod', 'HOD'),
-        ('procurement', 'Procurement'),
         ('to approve', 'WH Manager'),
         ('purchase', 'Approved'),
         ('done', 'Approved & Locked'),
@@ -37,7 +35,7 @@ class internal_requisition(models.Model):
     name = fields.Char('Reference', required=True,
                        index=True, copy=False, default='New')
     item_ids = fields.One2many(
-        'purchase.internal.requisition.item', 'ir_item_id', required=True)
+        'purchase.internal.requisition.item', 'ir_item_id')
     notes = fields.Text('Terms and Conditions')
     company_id = fields.Many2one(
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
@@ -52,53 +50,26 @@ class internal_requisition(models.Model):
 
     @api.model
     def create(self, vals):
+        department = self.env["purchase.department"].search(
+            [['id', '=', vals['ir_dept_id']]])
 
-        if vals['item_ids']:
-            for item in vals['item_ids']:
-                if item[2]:
-                    item_id = self.env['product.product'].search(
-                        [('id', '=', item[2]['item_id'])])
-                    if item[2]['product_qty'] <= 0:
-                        raise ValidationError(
-                            'Please set ordered quantity on -> ' + str(item_id.name)+' !')
-                    else:
-                        department = self.env["purchase.department"].search(
-                            [['id', '=', vals['ir_dept_id']]])
+        vals['ir_dept_code'] = department.dep_code
+        vals['ir_dept_head_id'] = department.dep_head_id.name
 
-                        vals['ir_dept_code'] = department.dep_code
-                        vals['ir_dept_head_id'] = department.dep_head_id.name
-
-                        if vals.get('name', 'New') == 'New':
-                            vals['name'] = self.env['ir.sequence'].next_by_code(
-                                'purchase.internal.requisition') or '/'
-                            return super(internal_requisition, self).create(vals)
-        else:
-            raise ValidationError('No item found!')
-            return {}
+        if vals.get('name', 'New') == 'New':
+            vals['name'] = self.env['ir.sequence'].next_by_code(
+                'purchase.internal.requisition') or '/'
+        return super(internal_requisition, self).create(vals)
 
     @api.multi
     def button_confirm(self):
         for order in self:
             if order.state in ['draft', 'sent']:
-                self.write(
-                    {'state': 'hod', 'date_approve': fields.Date.context_today(self)})
-            self.notifyHod(self.ir_dept_id, self.name)
+                self.write({'state': 'to approve',
+                            'date_approve': fields.Date.context_today(self)})
+                self.notifyUserInGroup(
+                    "stock.group_stock_manager")
         return {}
-
-    @api.one
-    def hod_approval(self):
-        self.write({'state': 'procurement',
-                    'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup(
-            "kijabe_purchase_ext.purchase_leader_procurement_id")
-        return True
-
-    @api.one
-    def procurement_manager_approval(self):
-        self.write({'state': 'to approve',
-                    'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("stock.group_stock_manager")
-        return True
 
     @api.multi
     def button_approve(self, force=False):
@@ -108,16 +79,9 @@ class internal_requisition(models.Model):
             lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
         for item in self.item_ids:
             if item.product_qty > item.qty_available:
-                raise UserError(str(
-                    item.item_id.name)+' is out of stock, remaining stock is:'+str(item.qty_available))
+                raise UserError(str(item.item_id.name)+' is out of stock, remaining stock is:'+str(item.qty_available))
         self._init_stock_move()
         self.notifyInitiator("Stock Manager")
-        return {}
-
-    @api.multi
-    def button_cancel(self):
-        self.write({'state': 'cancel'})
-        self.notifyInitiatorCancel(self.env.user.name)
         return {}
 
     def _init_stock_move(self):
@@ -167,7 +131,86 @@ class internal_requisition(models.Model):
         self.write({'state': 'draft'})
         return {}
 
-    
+    @api.multi
+    def load_duplicate_prod(self):
+        _logger.error("=====start=====")
+        products = self.env['product.template'].search([('active','=',True)])
+        _logger.error('# active products: '+str(len(products)))
+        count = 0
+        for prod in products:
+            duplicate = self.env['product.template'].search([('active','=',True),('name','=ilike',prod.name)])
+            
+            if len(duplicate)>1:
+                has_order = False
+                dup_pid = {}
+                for p in duplicate:                    
+                    order = self.env['purchase.order.line'].search([('product_id','=',p.id)])
+                    dup_pid[p.id]=len(order)
+                _logger.error(prod.name)
+                _logger.error(dup_pid)
+                _logger.error(max(dup_pid, key=dup_pid.get))
+                max_pid = max(dup_pid, key=dup_pid.get)
+                for p in duplicate:
+                    if p.id != max_pid:
+                        p.write({'active': False})
+                        count +=1
+                _logger.error("========================================")
+        _logger.error("|Total archived: "+str(count))
+        _logger.error("=====end=====")
+
+    @api.multi
+    def load_file_prod(self):
+        template = self.env['product.template'].search([('active','=',True)])
+        prod = self.env['product.product'].search([('active','=',True)])
+        _logger.error('|# Template: '+str(len(template)))
+        _logger.error('|# Prod: '+str(len(prod)))
+        # _logger.error(os.getcwd())
+        
+        dff = pandas.read_excel('inventory_items.xlsx', sheet_name='Worksheet')
+        df = pandas.DataFrame(dff, columns= ['Item name','Initial cost']).fillna(0)
+        listOfProd = [(ItemsInFile(row['Item name'],row['Initial cost'])) for index, row in df.iterrows()] #convert to list of ItemsInFile class 
+        new_prod = {}
+        uom = self.env['product.uom'].search([('name','=ilike','NA')])# look for a 'NA' UoM
+        if uom:
+            for p in listOfProd:
+                template = self.env['product.template'].search([('active','=',True),('name','=ilike',p.name)])
+                if len(template)>0:
+                    for i in range(len(template)):
+                        _logger.error('|'+template[i].name+' |Sales Price: '+str(template[i].lst_price))
+                        template[i].write({'lst_price':p.price})
+                        _logger.error('|'+template[i].name+' |Sales Price: '+str(template[i].lst_price))
+                        
+                else:
+                    product = self.env['product.template'].create({
+                        'name':p.name,
+                        'type':'product',
+                        'lst_price':p.price,
+                        'active':True,
+                        'uom_id':uom[0].id,
+                        'uom_po_id':uom[0].id
+                    })
+                    new_prod[p.name] = p.price
+
+                prod = self.env['product.product'].search([('active','=',True),('name','=ilike',p.name)])
+                if len(prod)>0:
+                    for i in range(len(prod)):                    
+                        prod[i].write({'lst_price':p.price})
+                else:
+                    product = self.env['product.product'].create({
+                        'name':p.name,
+                        'type':'product',
+                        'lst_price':p.price,
+                        'active':True,
+                        'uom_id':uom[0].id,
+                        'uom_po_id':uom[0].id
+                    })
+                
+            for p in new_prod:
+                _logger.error(p)
+                        
+
+
+
     # deal with notification
     @api.multi
     def notifyUserInGroup(self, group_ext_id):
@@ -203,8 +246,7 @@ class internal_requisition(models.Model):
     def notifyInitiatorCancel(self, approver):
         user = self.env["res.users"].search(
             [['id', '=', self[0].create_uid.id]])
-        self.sendToInitiatorCancel(
-            user.login, self[0].name, user.name, approver)
+        self.sendToInitiatorCancel(user.login, self[0].name, user.name, approver)
         return True
 
     @api.multi
@@ -222,7 +264,7 @@ class internal_requisition(models.Model):
 
         self.env['mail.mail'].create(values).send()
         return True
-
+        
     @api.multi
     def sendToInitiatorCancel(self, recipient, po, name, approver):
         url = self.env['ir.config_parameter'].get_param('web.base.url')
@@ -238,15 +280,6 @@ class internal_requisition(models.Model):
 
         self.env['mail.mail'].create(values).send()
         return True
-
-    @api.multi
-    def notifyHod(self, department, irf):
-        user = self.env["res.users"].search(
-            [['id', '=', department.dep_head_id.id]])
-        self.sendToManager(user.login, irf, user.name)
-        return True
-
-    # End notification
 
 
 class purchase_internal_requisition_items(models.Model):
@@ -274,5 +307,8 @@ class purchase_internal_requisition_items(models.Model):
             total_qty += quant.qty
         return total_qty
 
-
-
+class ItemsInFile:
+    def __init__(self, name, price):
+       self.name = name
+       self.price = price
+     

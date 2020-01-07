@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<odoo>
+    <!-- Extending the existing form -->
+    <record id="kijabe_purchase_ext_form" model="ir.ui.view">
+        <field name="name">Kijabe Purchase Ext Form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="arch" type="xml">
+            <!-- Adding the new field created in our model -->
+            <field name="company_id" position="after">
+                <field name="x_division" />
+                <field name="x_div_code" />
+            </field>
+            <!-- partner_ref -->
+            <field name="partner_ref" position="after">
+                <field name="irf_ids" />
+                <field name="x_dept_id" />
+                <field name="x_dept_code" />
+            </field>
+            <!-- Modififying the existing field to make it invisible -->
+            <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="attributes">
+                <field name="date_planned" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="attributes">
+                <field name="name" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='product_uom']" position="attributes">
+                <field name="product_uom" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
+                <field name="x_details"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend the existing view -->
+    <record id="view_tree_kijabe_purchase_ext" model="ir.ui.view">
+        <field name="name">Kijabe Purchase Ext Tree</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree" />
+        <field name="arch" type="xml">
+            <!-- Add new column (x_division) -->
+            <field name="date_order" position="after">
+                <field name="x_dept_id" />
+                <field name="x_dept_code" />
+                <field name="x_division" />
+                <field name="x_div_code" />
+                <field name="irf_ids" />
+            </field>
+        </field>
+    </record>
+    <!-- view for approval steps -->
+    <record id="purchase_additional_two_steps_approval_view" model="ir.ui.view">
+        <field name="name">purchase.additional.three.steps.approval</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="arch" type="xml">
+            <field name="state" position="attributes">
+                <attribute name="statusbar_visible">p_m_approve,o_m_approve,f_m_approve,draft,sent,purchase</attribute>
+            </field>
+            <button name="button_cancel" position="attributes">
+                <attribute name="states">p_m_approve,o_m_approve,f_m_approve,ceo_approve,draft,to approve,sent,purchase</attribute>
+            </button>
+            <button name="button_confirm" position="before">
+                <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="p_m_approve" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
+                <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="o_m_approve" groups="kijabe_purchase_ext.purchase_operation_id" />
+                <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
+                <button name="executive_director_approval" type="object" string="Executive Director Approval" states="ceo_approve" groups="kijabe_purchase_ext.purchase_director_id" />
+            </button>
+        </field>
+    </record>
+</odoo>

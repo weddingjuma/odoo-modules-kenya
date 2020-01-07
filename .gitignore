@@ -1,3 +1,8 @@
+#ignore all except kijabe_purchase_ext
+/*
+/*/
+!/kijabe_purchase_ext/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

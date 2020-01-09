@@ -5,6 +5,7 @@ from datetime import datetime
 import logging
 _logger = logging.getLogger(__name__)
 
+
 class stock_consume(models.Model):
     _name = "stock.consume"
     _inherit = ['mail.thread', 'ir.needaction_mixin']
@@ -12,16 +13,15 @@ class stock_consume(models.Model):
 
     ir_dept_id = fields.Many2one(
         'purchase.department', 'Department', required=True)
-    ir_dept_head_id = fields.Char('Department Head', readonly=True, store=True)
+    ir_dept_head_id = fields.Char('Department Head', readonly=True, store=True,required=True)
     ir_consumed_date = fields.Datetime(
         string='Date', required=True, index=True, default=fields.Datetime.now)
-    consumer = fields.Char('Client reference', required=True)
+    consumer = fields.Char('Patient ID / Reference', required=True)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'Sent'),
         ('hod', 'HOD'),
         ('approved', 'Approved'),
-        ('done', 'Approved & Locked'),
         ('cancel', 'Cancelled')
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     name = fields.Char('Reference', required=True,
@@ -37,28 +37,43 @@ class stock_consume(models.Model):
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
         self.ir_dept_head_id = self.ir_dept_id.dep_head_id.name
+        self.item_ids = []
         return {}
-    
+
     @api.model
     def create(self, vals):
+        department = self.env["purchase.department"].search(
+            [['id', '=', vals['ir_dept_id']]])
+        vals['ir_dept_head_id'] = department.dep_head_id.name
 
         if vals['item_ids']:
             for item in vals['item_ids']:
-                if item[2]:
+                if item[2] and item[2]['item_id']:
+                    stock_quant = self.env["stock.quant"].search(
+                        [('product_id', '=', item[2]['item_id']), ('location_id', '=', department.location.id)])
                     item_id = self.env['product.product'].search(
                         [('id', '=', item[2]['item_id'])])
-                    if item[2]['consumed_qty'] <= 0:
-                        raise ValidationError(
-                            'Please set quantity on -> ' + str(item_id.name)+' !')
+                    if len(stock_quant) > 0 and len(item_id) > 0:
+                        if item[2]['consumed_qty'] <= 0:
+                            raise ValidationError(
+                                'Qty on "' + item_id.name+'" should be more than zero !')
+                        elif item[2]['available_qty'] <= 0:
+                            raise ValidationError(
+                                item_id.name+' not available in ' + department.location.name + ' Store')
+                        elif item[2]['consumed_qty'] > item[2]['available_qty']:
+                            raise ValidationError(
+                                'Consumed Qty is more than available for -> ' + item_id.name)
+                        else:
+                            if vals.get('name', 'New') == 'New':
+                                vals['name'] = self.env['ir.sequence'].next_by_code(
+                                    'stock.consume') or '/'
+                                return super(stock_consume, self).create(vals)
                     else:
-                        department = self.env["purchase.department"].search(
-                            [['id', '=', vals['ir_dept_id']]])
-                        vals['ir_dept_head_id'] = department.dep_head_id.name
-
-                        if vals.get('name', 'New') == 'New':
-                            vals['name'] = self.env['ir.sequence'].next_by_code(
-                                'stock.consume') or '/'
-                            return super(stock_consume, self).create(vals)
+                        raise ValidationError(
+                            item_id.name +' Not available in ' + department.location.name + ' Store')
+                else:
+                    raise ValidationError(
+                        'Empty item name, Kindly check your list of items!')
         else:
             raise ValidationError('No item found!')
             return {}
@@ -71,8 +86,10 @@ class stock_consume(models.Model):
                     {'state': 'hod', 'date_approve': fields.Date.context_today(self)})
             self.notifyHod(self.ir_dept_id, self.name)
         return {}
+
     @api.one
     def hod_approval(self):
+        self._init_stock_move()
         self.write({'state': 'approved',
                     'date_approve': fields.Date.context_today(self)})
         self.notifyInitiator("HOD")
@@ -84,6 +101,47 @@ class stock_consume(models.Model):
         self.notifyInitiatorCancel(self.env.user.name)
         return {}
 
+    def _init_stock_move(self):
+        sp_types = self.env['stock.picking.type'].search(
+            [('code', '=', 'internal'), ('active', '=', True)])
+        destination = self.env['stock.location'].search(
+            [('name', '=', self.ir_dept_id.location.name), ('usage', '=', 'inventory'), ('active', '=', True)])
+
+        # Initiate a stock pick
+        if destination:
+            for prod in self.item_ids:
+                move = self.env['stock.move'].create({
+                    'name': str(prod.item_id.name),
+                    'location_id': self.ir_dept_id.location.id,
+                    'location_dest_id': destination.id,
+                    'product_id': prod.item_id.id,
+                    'product_uom': prod.item_id.uom_id.id,
+                    'product_uom_qty': prod.consumed_qty,
+                    'picking_type_id': sp_types[0].id,
+                })
+                picking = self.env['stock.picking'].create({
+                    'state': 'draft',
+                    'location_id': self.ir_dept_id.location.id,
+                    'location_dest_id': destination.id,
+                    'origin': self.name,
+                    'move_type': 'direct',
+                    'picking_type_id': sp_types[0].id,
+                    'picking_type_code': sp_types[0].code,
+                    'quant_reserved_exist': False,
+                    'min_date': datetime.today(),
+                    'priority': '1',
+                    'company_id': prod.item_id.company_id.id,
+                })
+                picking.move_lines = move
+                picking.action_confirm()
+                picking.force_assign()
+                picking.pack_operation_product_ids.write(
+                    {'qty_done': prod.consumed_qty})
+                picking.do_new_transfer()
+        else:
+            raise ValidationError('Virtual Consumption location for "'+ self.ir_dept_id.location.name +'" not found, Please contact the system adminstrator.')
+        return {}
+
     # Start Notification
     @api.multi
     def notifyInitiator(self, approver):
@@ -91,13 +149,13 @@ class stock_consume(models.Model):
             [['id', '=', self[0].create_uid.id]])
         self.sendToInitiator(user.login, self[0].name, user.name, approver)
         return True
-    
+
     @api.multi
     def sendToInitiator(self, recipient, po, name, approver):
         url = self.env['ir.config_parameter'].get_param('web.base.url')
         mail_pool = self.env['mail.mail']
         values = {}
-        values.update({'subject': 'Stock Consumption #' +
+        values.update({'subject': 'Stock Consumption # ' +
                        po + ' approved'})
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
@@ -113,7 +171,7 @@ class stock_consume(models.Model):
         url = self.env['ir.config_parameter'].get_param('web.base.url')
         mail_pool = self.env['mail.mail']
         values = {}
-        values.update({'subject': 'Stock Consumption #' +
+        values.update({'subject': 'Stock Consumption # ' +
                        po + ' waiting your approval'})
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
@@ -133,6 +191,7 @@ class stock_consume(models.Model):
 
     # End notification
 
+
 class stock_consume_item(models.Model):
     _name = "stock.consume.item"
     _inherit = ['mail.thread', 'ir.needaction_mixin']
@@ -140,4 +199,19 @@ class stock_consume_item(models.Model):
 
     ir_item_id = fields.Many2one('stock.consume')
     item_id = fields.Many2one('product.product', string='Item')
+    available_qty = fields.Float('Remaining Quantity', store=True)
     consumed_qty = fields.Float('Consumed Quantity', store=True)
+
+    @api.onchange('item_id')
+    def _get_qty(self):
+        self.available_qty = self.compute_remain_qty()
+        return {}
+
+    def compute_remain_qty(self):
+        stock_qty_obj = self.env['stock.quant']
+        stock_qty_lines = stock_qty_obj.search([('product_id', '=', self.item_id.id), (
+            'location_id', '=', self.ir_item_id.ir_dept_id.location.id)])
+        total_qty = 0
+        for quant in stock_qty_lines:
+            total_qty += quant.qty
+        return total_qty

@@ -11,7 +11,6 @@
                     <button name="button_confirm" type="object" states="sent" string="Confirm" class="oe_highlight" id="bid_confirm"/>
                     <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
                     <button name="button_cancel" states="hod,draft,approved" string="Cancel" type="object" />
-                    <button name="button_done" type="object" string="Lock" states="approved" />
                     <button name="hod_approval" type="object" string="HOD Approval" states="hod" groups="kijabe_purchase_ext.hod_id" />
                     <field name="state" widget="statusbar" statusbar_visible="hod,draft,approved" readonly="1" />
                 </header>
@@ -23,22 +22,21 @@
                     </div>
                     <group>
                         <group>
-                            <field name="ir_dept_id" />
+                            <field name="ir_dept_id" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
                             <field name="ir_dept_head_id" />
                         </group>
                         <group>
-                            <field name="ir_consumed_date" />
-                            <field name="consumer"/>
+                            <field name="ir_consumed_date" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
+                            <field name="consumer" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
                         </group>
                     </group>
                     <notebook>
                         <page name="items" string="Items">
-                            <field name="item_ids" widget="one2many_list">
+                            <field name="item_ids" widget="one2many_list" attrs="{'readonly':[('state','in',['hod','approved'])]}">
                                 <tree editable="bottom">
-                                    <field name="item_id" 
-                                    domain="[('type', '!=', 'service')]"
-                                     />
+                                    <field name="item_id" domain="[('type', '!=', 'service')]"/>
                                     <field name="consumed_qty" type="char"/>
+                                    <field name="available_qty" type="char"/>
                                 </tree>
                             </field>
                             <div class="oe_clear" />

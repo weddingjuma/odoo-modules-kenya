@@ -23,12 +23,12 @@
 		</record>
 		<record id="purchase_operation_id" model="res.groups">
 			<field name="name">Operations Manager(Purchase) </field>
-			<field name="category_id" ref="base.module_category_hidden" />
+			<field name="category_id" ref="kijabe_purchase_ext.module_management" />
 			<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]" />
 		</record>
 		<record id="purchase_director_id" model="res.groups">
 			<field name="name">Executive Director(Purchase) </field>
-			<field name="category_id" ref="base.module_category_hidden" />
+			<field name="category_id" ref="kijabe_purchase_ext.module_management" />
 			<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]" />
 		</record>
 	</data>

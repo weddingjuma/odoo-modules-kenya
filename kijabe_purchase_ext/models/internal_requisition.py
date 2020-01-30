@@ -268,7 +268,7 @@ class purchase_internal_requisition_items(models.Model):
     def compute_remain_qty(self, item):
         stock_qty_obj = self.env['stock.quant']
         stock_qty_lines = stock_qty_obj.search([('product_id', '=', self.item_id.id), (
-            'location_id', '=', self.ir_item_id.ir_dept_id.location.location_id.id)])
+            'location_id', '=', self.ir_item_id.ir_dept_id.location.location_id.id)])# Get Primary/Parent location
         total_qty = 0
         for quant in stock_qty_lines:
             total_qty += quant.qty

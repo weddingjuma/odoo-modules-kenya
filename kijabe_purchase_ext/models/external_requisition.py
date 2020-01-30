@@ -40,8 +40,6 @@ class external_requisition(models.Model):
     date_approve = fields.Date(
         'Approval Date', readonly=1, index=True, copy=False)
 
-
-
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
         self.ir_dept_code = self.ir_dept_id.dep_code
@@ -50,16 +48,28 @@ class external_requisition(models.Model):
 
     @api.model
     def create(self, vals):
-        department = self.env["purchase.department"].search(
-            [['id', '=', vals['ir_dept_id']]])
+        if vals['item_ids']:
+            for item in vals['item_ids']:
+                if item[2]:
+                    item_id = self.env['product.product'].search(
+                        [('id', '=', item[2]['item_id'])])
+                    if item[2]['qty'] <= 0:
+                        raise ValidationError(
+                            'Please set ordered quantity on -> ' + str(item_id.name)+' !')
+                    else:
+                        department = self.env["purchase.department"].search(
+                            [['id', '=', vals['ir_dept_id']]])
 
-        vals['ir_dept_code'] = department.dep_code
-        vals['ir_dept_head_id'] = department.dep_head_id.name
+                        vals['ir_dept_code'] = department.dep_code
+                        vals['ir_dept_head_id'] = department.dep_head_id.name
 
-        if vals.get('name', 'New') == 'New':
-            vals['name'] = self.env['ir.sequence'].next_by_code(
-                'purchase.external.requisition') or '/'
-        return super(external_requisition, self).create(vals)
+                        if vals.get('name', 'New') == 'New':
+                            vals['name'] = self.env['ir.sequence'].next_by_code(
+                                'purchase.external.requisition') or '/'
+                        return super(external_requisition, self).create(vals)
+        else:
+            raise ValidationError('No item found!')
+            return {}
 
     @api.multi
     def button_confirm(self):

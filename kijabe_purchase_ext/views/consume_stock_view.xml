@@ -27,7 +27,8 @@
                         </group>
                         <group>
                             <field name="ir_consumed_date" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
-                            <field name="consumer" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
+                            <field name="is_patient"/>
+                            <field name="patient_id" attrs="{'readonly':[('state','in',['hod','approved'])],'invisible': [('is_patient', '=', False)]}"/>
                         </group>
                     </group>
                     <notebook>

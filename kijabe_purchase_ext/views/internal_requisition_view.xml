@@ -148,6 +148,6 @@
     </record>
     <!-- Menus  -->
     <menuitem action="internal_requisition_action" id="menu_internal_requisition_action" parent="purchase.menu_procurement_management" sequence="7" />
-    <menuitem action="purchase_division_action" id="menu_division_action" parent="purchase.menu_procurement_management" sequence="9" />
+    <menuitem action="purchase_division_action" id="menu_division_action" parent="base.menu_users" sequence="11" />
     
 </odoo>

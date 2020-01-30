@@ -16,7 +16,7 @@ class stock_consume(models.Model):
     ir_dept_head_id = fields.Char('Department Head', readonly=True, store=True,required=True)
     ir_consumed_date = fields.Datetime(
         string='Date', required=True, index=True, default=fields.Datetime.now)
-    consumer = fields.Char('Patient ID / Reference', required=True)
+    patient_id = fields.Char('Patient ID')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'Sent'),
@@ -33,6 +33,7 @@ class stock_consume(models.Model):
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
     date_approve = fields.Date(
         'Approval Date', readonly=1, index=True, copy=False)
+    is_patient = fields.Boolean('Is for Patient?')
 
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
@@ -210,7 +211,7 @@ class stock_consume_item(models.Model):
     def compute_remain_qty(self):
         stock_qty_obj = self.env['stock.quant']
         stock_qty_lines = stock_qty_obj.search([('product_id', '=', self.item_id.id), (
-            'location_id', '=', self.ir_item_id.ir_dept_id.location.id)])
+            'location_id', '=', self.ir_item_id.ir_dept_id.location.id)]) # Get Department location
         total_qty = 0
         for quant in stock_qty_lines:
             total_qty += quant.qty

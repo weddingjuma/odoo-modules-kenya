@@ -6,3 +6,4 @@ from . import purchase_order_line
 from . import external_requisition
 from . import consume_stock
 from . import test_model
+from . import pharmacy_order

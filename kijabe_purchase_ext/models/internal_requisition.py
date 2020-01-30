@@ -3,10 +3,6 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 import odoo.addons.decimal_precision as dp
 from datetime import datetime
-import pandas
-from pandas import ExcelWriter
-from pandas import ExcelFile
-# import os
 
 import logging
 _logger = logging.getLogger(__name__)

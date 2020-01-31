@@ -11,6 +11,11 @@
 				<field name="category_id" ref="kijabe_purchase_ext.module_management" />
 				<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]" />
 		</record>
+		<record id="pharmacy" model="res.groups">
+			<field name="name">Pharmacist </field>
+			<field name="category_id" ref="kijabe_purchase_ext.module_management" />
+			<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]" />
+	</record>
 		<record id="purchase_leader_procurement_id" model="res.groups">
 			<field name="name">Procurement Manager(Purchase) </field>
 			<field name="category_id" ref="kijabe_purchase_ext.module_management" />

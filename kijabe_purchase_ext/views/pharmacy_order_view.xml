@@ -1,0 +1,92 @@
+<odoo>
+    <!-- form view -->
+    <record id="pharmacy_order_form_view" model="ir.ui.view">
+            <field name="name">pharmacy.order.form.view</field>
+            <field name="model">pharmacy.order</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="button_confirm" type="object" states="draft" string="Confirm Pharmacy Order" id="draft_confirm" />
+                        <button name="button_confirm" type="object" states="sent" string="Confirm Pharmacy Order" class="oe_highlight" id="bid_confirm"/>
+                        <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
+                        <button name="button_cancel" states="hod,pharmacy,draft" string="Cancel" type="object" />
+                        <button name="button_done" type="object" string="Lock" states="approved" />
+                        <button name="pharmacist_approval" type="object" string="Pharmacist Approval" states="pharmacy" groups="kijabe_purchase_ext.pharmacy" />
+                        <button name="hod_approval" type="object" string="HOD Approval" states="hod" groups="kijabe_purchase_ext.hod_id" />
+                        <field name="state" widget="statusbar" statusbar_visible="hod,pharmacy,draft,approved" readonly="1" />
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label string="Pharmacy Order" attrs="{'invisible': [('state','in',('draft','sent'))]}" />
+                            <h2>
+                                <field name="name" readonly="1" />
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="ir_dept_id" />
+                                <field name="ir_dept_head_id" />
+                            </group>
+                            <group>
+                                <field name="ir_req_date" />
+                                <field name="ir_dept_code" />
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="items" string="Items">
+                                <field name="item_ids" widget="one2many_list">
+                                    <tree editable="bottom" delete="1" colors="red:qty_available &lt; product_qty">
+                                        <field name="item_id"/>
+                                        <field name="qty_available"/>
+                                        <field name="product_qty"/>
+                                        <field name="comment" />
+                                    </tree>
+                                </field>
+                                <div class="oe_clear" />
+                            </page>
+                            
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers" />
+                        <field name="message_ids" widget="mail_thread" />
+                    </div>
+                </form>
+            </field>
+        </record>
+
+    <!-- tree view -->
+    <record id="pharmacy_order_tree_view" model="ir.ui.view">
+            <field name="name">pharmacy.order.tree.view</field>
+            <field name="model">pharmacy.order</field>
+            <field name="arch" type="xml">
+                <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Pharmact Orders" default_order='name desc'>
+                    <field name="message_unread" invisible="1" />
+                    <field name="name" />
+                    <field name="ir_dept_id" />
+                    <field name="ir_dept_head_id" />
+                    <field name="ir_dept_code" />
+                    <field name="ir_req_date" />
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+    
+    <!-- Actions -->
+    <record id="pharmacy_order_action" model="ir.actions.act_window">
+        <field name="name">Pharmacy Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pharmacy.order</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_type">form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                        Click to order drugs. 
+                    </p>
+        </field>
+    </record>
+
+    <!-- Menus  -->
+    <menuitem action="pharmacy_order_action" id="menu_pharmacy_order_action" parent="purchase.menu_procurement_management" sequence="12" />
+
+</odoo>

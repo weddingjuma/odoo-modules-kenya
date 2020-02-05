@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <odoo>
     <!-- form view -->
-    <record id="test_model_form_view" model="ir.ui.view">
-            <field name="name">stock.consume.form.view</field>
-            <field name="model">test.model</field>
+    <record id="util_model_form_view" model="ir.ui.view">
+            <field name="name">util.model.form.view</field>
+            <field name="model">util.model</field>
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <button name="load_uom_prod" type="object" string="Load UoM" />
+                        <button name="load_drugs" type="object" string="Load drugs" />
                     </header>
                     
                 </form>
@@ -16,20 +16,20 @@
     
 
     <!-- Actions -->
-    <record id="test_menu_action" model="ir.actions.act_window">
-        <field name="name">Test view</field>
+    <record id="util_menu_action" model="ir.actions.act_window">
+        <field name="name">Util view</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">test.model</field>
+        <field name="res_model">util.model</field>
         <field name="view_mode">tree,kanban,form</field>
         <field name="view_type">form</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
-                Click to record new test. 
+                Click to record new util. 
             </p>
         </field>
     </record>
 
 
     <!-- Menus  -->
-    <menuitem action="test_menu_action" id="menu_test_action" parent="purchase.menu_procurement_management" sequence="12" />
+    <menuitem action="util_menu_action" id="menu_util_action" parent="purchase.menu_procurement_management" sequence="12" />
 </odoo>

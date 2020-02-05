@@ -7,6 +7,6 @@ access_purchase_external_requisition,access_purchase_external_requisition,model_
 access_purchase_external_requisition_item,access_purchase_external_requisition_item,model_purchase_external_requisition_item,base.group_user,1,1,1,1
 access_stock_consume,access_stock_consume,model_stock_consume,base.group_user,1,1,1,1
 access_stock_consume_item,access_stock_consume_item,model_stock_consume_item,base.group_user,1,1,1,1
-access_test_model,access_test_model,model_test_model,base.group_user,1,1,1,1
+access_util_model,access_util_model,model_util_model,base.group_user,1,1,1,1
 access_pharmacy_order,access_pharmacy_order,model_pharmacy_order,base.group_user,1,1,1,1
 access_pharmacy_order_item,access_pharmacy_order_item,model_pharmacy_order_item,base.group_user,1,1,1,1

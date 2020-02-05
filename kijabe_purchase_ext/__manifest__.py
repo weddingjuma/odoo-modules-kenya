@@ -14,7 +14,7 @@
             'views/external_requisition_view.xml',
             'views/consume_stock_view.xml',
             'views/pharmacy_order_view.xml',
-            'views/test_view.xml',
+            'views/util_view.xml',
             'report/report.xml'
 
         ],

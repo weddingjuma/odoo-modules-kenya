@@ -6,13 +6,51 @@ from datetime import datetime
 import pandas
 from pandas import ExcelWriter
 from pandas import ExcelFile
-# import os
+# csv file import
+import xmlrpclib
+import csv
 
 import logging
 _logger = logging.getLogger(__name__)
 
-class test_model(models.Model):
-    _name = "test.model"
+class util_model(models.Model):
+    _name = "util.model"
+
+    @api.multi
+    def load_drugs(self):
+        url = self.env['ir.config_parameter'].get_param('web.base.url')
+        username = "jeanpaul.mupagasi@cureinternational.org"
+        pwd = 'Welcome123'
+        dbname = "cure_kenya"
+        sock_common = xmlrpclib.ServerProxy(url+"/xmlrpc/common")
+        uid = sock_common.login(dbname, username, pwd)
+        sock = xmlrpclib.ServerProxy(url+"/xmlrpc/object")
+        reader = csv.reader(open('odoo.csv', 'rb'),
+                            delimiter='|', quotechar='"')
+        for row in reader:
+                uom = self.env['product.uom'].search([('name', '=', row[1])],limit=1)
+                categ = self.env['product.category'].search([('name', '=', 'Pharmacy')]) 
+                name = self.env['product.template'].search(
+                    [('name', '=', row[0])])
+                if name:
+                    _logger.error(
+                        "====="+row[0]+" Duplicated")
+                else:
+                    if uom:
+                        product_template = {
+                            'name': row[0],
+                            'uom_id': uom.id,
+                            'uom_po_id': uom.id,
+                            'list_price': row[2],
+                            'standard_price': row[2],
+                            'categ_id': categ.id,
+                            'type': 'product'}
+                        template_id = sock.execute(
+                            dbname, uid, pwd, 'product.template', 'create', product_template)
+                    else:
+                        _logger.error(
+                            "====="+row[0] + " UoM not found: "+str(row[1]))
+        return {}
 
     # Check duplicate products and archive if it doen't belong to a purchase order
     @api.multi

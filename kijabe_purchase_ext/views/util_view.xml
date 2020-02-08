@@ -31,5 +31,5 @@
 
 
     <!-- Menus  -->
-    <menuitem action="util_menu_action" id="menu_util_action" parent="purchase.menu_procurement_management" sequence="12" />
+    <menuitem action="util_menu_action" id="menu_util_action" parent="base.menu_users" sequence="12" />
 </odoo>

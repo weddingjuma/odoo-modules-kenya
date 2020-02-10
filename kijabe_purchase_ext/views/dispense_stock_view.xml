@@ -1,9 +1,9 @@
 <odoo>
     
     <!-- form view -->
-    <record id="stock_consume_form_view" model="ir.ui.view">
-        <field name="name">stock.consume.form.view</field>
-        <field name="model">stock.consume</field>
+    <record id="stock_dispense_form_view" model="ir.ui.view">
+        <field name="name">stock.dispense.form.view</field>
+        <field name="model">stock.dispense</field>
         <field name="arch" type="xml">
             <form>
                 <header>
@@ -26,9 +26,12 @@
                             <field name="ir_dept_head_id" />
                         </group>
                         <group>
-                            <field name="ir_consumed_date" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
+                            <field name="ir_dispensed_date" attrs="{'readonly':[('state','in',['hod','approved'])]}"/>
                             <field name="is_patient"/>
                             <field name="patient_id" attrs="{'readonly':[('state','in',['hod','approved'])],'invisible': [('is_patient', '=', False)]}"/>
+                            <field name="is_department"/>
+                            <field name="disp_department" attrs="{'readonly':[('state','in',['hod','approved'])],'invisible': [('is_department', '=', False)]}"/>
+
                         </group>
                     </group>
                     <notebook>
@@ -36,7 +39,7 @@
                             <field name="item_ids" widget="one2many_list" attrs="{'readonly':[('state','in',['hod','approved'])]}">
                                 <tree editable="bottom">
                                     <field name="item_id" domain="[('type', '!=', 'service')]"/>
-                                    <field name="consumed_qty" type="char"/>
+                                    <field name="dispensed_qty" type="char"/>
                                     <field name="available_qty" type="char"/>
                                 </tree>
                             </field>
@@ -54,35 +57,35 @@
     </record>
 
      <!-- tree view -->
-     <record id="stock_consume_tree_view" model="ir.ui.view">
-        <field name="name">stock.consume.tree.view</field>
-        <field name="model">stock.consume</field>
+     <record id="stock_dispense_tree_view" model="ir.ui.view">
+        <field name="name">stock.dispense.tree.view</field>
+        <field name="model">stock.dispense</field>
         <field name="arch" type="xml">
-            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Consumption" default_order='id desc'>
+            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Stock Dispensing" default_order='id desc'>
                 <field name="message_unread" invisible="1" />
                 <field name="name" />
                 <field name="ir_dept_id" />
                 <field name="ir_dept_head_id" />
-                <field name="ir_consumed_date" />
+                <field name="ir_dispensed_date" />
                 <field name="state" />
             </tree>
         </field>
     </record>
 
      <!-- Actions -->
-     <record id="consumer_stock_action" model="ir.actions.act_window">
-        <field name="name">Stock consumption</field>
+     <record id="dispense_stock_action" model="ir.actions.act_window">
+        <field name="name">Stock Dispensing</field>
         <field name="type">ir.actions.act_window</field>
-        <field name="res_model">stock.consume</field>
+        <field name="res_model">stock.dispense</field>
         <field name="view_mode">tree,kanban,form</field>
         <field name="view_type">form</field>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
-                Click to record new consumed items. 
+                Click to record new dispensed items. 
             </p>
         </field>
     </record>
 
     <!-- Menus  -->
-    <menuitem action="consumer_stock_action" id="menu_consume_stock_action" parent="purchase.menu_procurement_management" sequence="11" />
+    <menuitem action="dispense_stock_action" id="menu_dispense_stock_action" parent="purchase.menu_procurement_management" sequence="11" />
 </odoo>

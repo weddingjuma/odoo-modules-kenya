@@ -17,6 +17,10 @@
                 <field name="x_dept_id" />
                 <field name="x_dept_code" />
             </field>
+            <tree position='attributes'>
+                <attribute name="default_order">id desc</attribute>
+                
+            </tree>
             <!-- Modififying the existing field to make it invisible -->
             <xpath expr="//field[@name='order_line']/tree/field[@name='date_planned']" position="attributes">
                 <field name="date_planned" position="attributes">

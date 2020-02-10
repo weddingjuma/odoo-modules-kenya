@@ -58,7 +58,7 @@
         <field name="name">stock.consume.tree.view</field>
         <field name="model">stock.consume</field>
         <field name="arch" type="xml">
-            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Consumption" default_order='name desc'>
+            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Consumption" default_order='id desc'>
                 <field name="message_unread" invisible="1" />
                 <field name="name" />
                 <field name="ir_dept_id" />

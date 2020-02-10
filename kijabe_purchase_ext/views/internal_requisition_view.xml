@@ -98,7 +98,7 @@
         <field name="name">purchase.internal.requisition.tree.view</field>
         <field name="model">purchase.internal.requisition</field>
         <field name="arch" type="xml">
-            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Internal Requisition Orders" default_order='name desc'>
+            <tree decoration-bf="message_unread==True" decoration-muted="state=='cancel'" string="Internal Requisition Orders" default_order='id desc'>
                 <field name="message_unread" invisible="1" />
                 <field name="name" />
                 <field name="ir_dept_id" />

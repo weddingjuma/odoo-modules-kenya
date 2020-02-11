@@ -85,7 +85,15 @@
             </p>
         </field>
     </record>
+    <record id="stock_balance_byloc_action" model="ir.actions.server">
+        <field name="name">Stock Balance</field>
+        <field name="model_id" ref="model_stock_dispense"/>
+        <field name="state">code</field>
+        <field name="code">action = env['stock.dispense'].browse(context.get('active_id')).group_by_location()</field>
+        <field eval="True" name="condition"/>
+    </record>
 
     <!-- Menus  -->
     <menuitem action="dispense_stock_action" id="menu_dispense_stock_action" parent="purchase.menu_procurement_management" sequence="11" />
+    <menuitem action="stock_balance_byloc_action" id="menu_stock_valuation_byloc_action" parent="purchase.menu_procurement_management" sequence="13" />
 </odoo>

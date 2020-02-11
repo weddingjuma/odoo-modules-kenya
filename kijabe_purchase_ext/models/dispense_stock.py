@@ -37,6 +37,21 @@ class stock_dispense(models.Model):
     is_department = fields.Boolean('Is for department?')
     disp_department = fields.Many2one('purchase.department', 'Department dispensed on')
 
+    @api.multi
+    def group_by_location(self):
+        department = self.env["purchase.department"].search([['dep_head_id', '=', self.env.user.id]])
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Stock balances for '+department[0].name,
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'res_model': 'stock.quant',
+            'domain': [('location_id','=',department[0].location.id)],
+            'views': [(False, 'tree'), (False, 'form')],
+            'target': 'current',
+            'context': None,
+        }
+
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
         self.ir_dept_head_id = self.ir_dept_id.dep_head_id.name

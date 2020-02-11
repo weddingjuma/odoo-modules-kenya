@@ -12,10 +12,9 @@
             'views/kijabe_purchase_ext_view.xml',
             'views/internal_requisition_view.xml',
             'views/external_requisition_view.xml',
-            'views/dispense_stock_view.xml',
+            'views/stock_dispense_view.xml',
             'views/pharmacy_order_view.xml',
             'views/util_view.xml',
             'report/report.xml'
-
         ],
 }

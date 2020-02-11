@@ -8,5 +8,5 @@ access_purchase_external_requisition_item,access_purchase_external_requisition_i
 access_util_model,access_util_model,model_util_model,base.group_user,1,1,1,1
 access_pharmacy_order,access_pharmacy_order,model_pharmacy_order,base.group_user,1,1,1,1
 access_pharmacy_order_item,access_pharmacy_order_item,model_pharmacy_order_item,base.group_user,1,1,1,1
-access_stock_dispense,access_stock_dispense,kijabe_purchase_ext.model_stock_dispense,base.group_user,1,1,1,1
-access_stock_dispense_item,access_stock_dispense_item,kijabe_purchase_ext.model_stock_dispense_item,base.group_user,1,1,1,1
+access_stock_dispense,access_stock_dispense,model_stock_dispense,base.group_user,1,1,1,1
+access_stock_dispense_item,access_stock_dispense_item,model_stock_dispense_item,base.group_user,1,1,1,1

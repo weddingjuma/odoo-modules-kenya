@@ -95,5 +95,5 @@
 
     <!-- Menus  -->
     <menuitem action="dispense_stock_action" id="menu_dispense_stock_action" parent="purchase.menu_procurement_management" sequence="11" />
-    <menuitem action="stock_balance_byloc_action" id="menu_stock_valuation_byloc_action" parent="purchase.menu_procurement_management" sequence="13" />
+    <menuitem action="stock_balance_byloc_action" id="menu_stock_valuation_byloc_action" parent="purchase.menu_procurement_management" groups="kijabe_purchase_ext.hod_id" sequence="13" />
 </odoo>

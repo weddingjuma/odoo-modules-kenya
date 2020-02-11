@@ -24,8 +24,7 @@ class internal_requisition(models.Model):
         ('draft', 'Draft'),
         ('sent', 'IRF Sent'),
         ('hod', 'HOD'),
-        ('procurement', 'Procurement'),
-        ('to approve', 'WH Manager'),
+        ('warehouse', 'WH Manager'),
         ('purchase', 'Approved'),
         ('done', 'Approved & Locked'),
         ('cancel', 'Cancelled')
@@ -83,31 +82,27 @@ class internal_requisition(models.Model):
 
     @api.one
     def hod_approval(self):
-        self.write({'state': 'procurement',
-                    'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup(
-            "kijabe_purchase_ext.purchase_leader_procurement_id")
-        return True
-
-    @api.one
-    def procurement_manager_approval(self):
-        self.write({'state': 'to approve',
-                    'date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("stock.group_stock_manager")
-        return True
+        for order in self:
+            if order.state in ['hod']:
+                self.write({'state': 'warehouse',
+                            'date_approve': fields.Date.context_today(self)})
+                self.notifyUserInGroup("stock.group_stock_manager")
+        return {}
 
     @api.multi
     def button_approve(self, force=False):
-        self.write(
-            {'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
-        self.filtered(
-            lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
-        for item in self.item_ids:
-            if item.product_qty > item.qty_available:
-                raise UserError(str(
-                    item.item_id.name)+' is out of stock, remaining stock is:'+str(item.qty_available))
-        self._init_stock_move()
-        self.notifyInitiator("Stock Manager")
+        for order in self:
+            if order.state in ['warehouse']:
+                self.write(
+                    {'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
+                self.filtered(
+                    lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+                for item in self.item_ids:
+                    if item.product_qty > item.qty_available:
+                        raise UserError(str(
+                            item.item_id.name)+' is out of stock, remaining stock is:'+str(item.qty_available))
+                self._init_stock_move()
+                self.notifyInitiator("Stock Manager")
         return {}
 
     @api.multi
@@ -183,7 +178,7 @@ class internal_requisition(models.Model):
         values.update({'email_to': recipient})
         values.update({'body_html':
                        'To Manager ' + name + ',<br>'
-                       + 'IRF No. ' + po + ' has been created and requires your approval. You can find the details to approve here. '+url})
+                       + 'IRF No. ' + po + ' has been created and requires your approval. You can find the details warehouse here. '+url})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -249,7 +244,7 @@ class purchase_internal_requisition_items(models.Model):
     _name = "purchase.internal.requisition.item"
     ir_item_id = fields.Many2one('purchase.internal.requisition')
     item_id = fields.Many2one('product.product', string='Item')
-    qty_available = fields.Float('Available Quantity',
+    qty_available = fields.Float('Balance in Warehouse',
                                  store=True,
                                  )
     product_qty = fields.Float(string='Quantity To Order', digits=dp.get_precision(

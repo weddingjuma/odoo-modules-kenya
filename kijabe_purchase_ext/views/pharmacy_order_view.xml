@@ -37,8 +37,8 @@
                                 <field name="item_ids" widget="one2many_list">
                                     <tree editable="bottom" delete="1" colors="red:qty_available &lt; product_qty">
                                         <field name="item_id"/>
-                                        <field name="qty_available"/>
                                         <field name="product_qty"/>
+                                        <field name="qty_available"/>
                                         <field name="comment" />
                                     </tree>
                                 </field>

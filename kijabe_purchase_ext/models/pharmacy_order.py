@@ -222,7 +222,7 @@ class pharmacy_order_item(models.Model):
     ir_item_id = fields.Many2one('pharmacy.order')
     
     item_id = fields.Many2one('product.product', string='Item', domain=lambda self:self._get_pharmacy_categ()) # Get only product of pharmacy category
-    qty_available = fields.Float('Available Quantity',
+    qty_available = fields.Float('Balance in Stock',
                                  store=True,
                                  )
     product_qty = fields.Float(string='Quantity To Order', digits=dp.get_precision(

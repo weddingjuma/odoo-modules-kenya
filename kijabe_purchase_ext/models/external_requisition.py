@@ -23,9 +23,10 @@ class external_requisition(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'),
         ('sent', 'ERF Sent'),
-        ('finance','Finance'),
-        ('op','Operations Head'),
+        ('hod','HOD'),
         ('procurement','Procurement'),
+        ('finance','Finance'),
+        ('op','Operations Head'),        
         ('purchase', 'Approved'),
         ('done', 'Approved & Locked'),
         ('cancel', 'Cancelled')
@@ -75,18 +76,24 @@ class external_requisition(models.Model):
     def button_confirm(self):
         for order in self:
             if order.state in ['draft', 'sent']:
-                self.write({'state': 'finance', 'date_approve': fields.Date.context_today(self)})
-                self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
+                self.write(
+                    {'state': 'hod', 'date_approve': fields.Date.context_today(self)})
+            self.notifyHod(self.ir_dept_id, self.name)
         return {}
 
     @api.multi
-    def button_approve(self, force=False):
-        self.write(
-            {'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
-        self.filtered(
-            lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
-        self.notifyInitiator("Procurement Manager")
+    def button_hod(self):
+        for order in self:
+            if order.state in ['hod']:
+                self.write({'state': 'procurement', 'date_approve': fields.Date.context_today(self)})
+                self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
         return {}
+
+    @api.one
+    def procurement_manager_approval(self):
+        self.write({'state': 'finance','date_approve': fields.Date.context_today(self)})
+        self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
+        return True
 
     @api.one
     def financial_manager_approval(self):
@@ -96,14 +103,17 @@ class external_requisition(models.Model):
 
     @api.one
     def operations_manager_approval(self):
-        self.write({'state': 'procurement','date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
-        return True
-
-    @api.one
-    def procurement_manager_approval(self):
         self.button_approve()
         return True
+
+    @api.multi
+    def button_approve(self, force=False):
+        self.write(
+            {'state': 'purchase', 'date_approve': fields.Date.context_today(self)})
+        self.filtered(
+            lambda p: p.company_id.po_lock == 'lock').write({'state': 'done'})
+        self.notifyInitiator("Operation Manager")
+        return {}
 
     @api.multi
     def button_cancel(self):
@@ -184,6 +194,13 @@ class external_requisition(models.Model):
                        + 'ERF No. ' + po + ' has been cancelled by ' + str(approver)+'. You can find the details: '+url})
 
         self.env['mail.mail'].create(values).send()
+        return True
+
+    @api.multi
+    def notifyHod(self, department, irf):
+        user = self.env["res.users"].search(
+            [['id', '=', department.dep_head_id.id]])
+        self.sendToManager(user.login, irf, user.name)
         return True
 
 

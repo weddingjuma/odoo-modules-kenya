@@ -11,15 +11,16 @@
                     <button name="button_confirm" type="object" states="sent" string="Confirm ERF" class="oe_highlight" id="bid_confirm" />
                     <!-- <button name="button_approve" type="object" states="procurement" string="Approve ERF" class="oe_highlight" groups="purchase_leader_procurement_id" /> -->
                     <button name="button_draft" states="cancel" string="Set to Draft" type="object" />
-                    <button name="button_cancel" states="finance,op,procurement,draft,purchase" string="Cancel" type="object" />
-                    <button name="button_done" type="object" string="Lock" states="purchase" />
+                    <button name="button_cancel" states="finance,op,procurement,draft" string="Cancel" type="object" />
                     <!-- start additional approval -->
                     <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="op" groups="kijabe_purchase_ext.purchase_operation_id" />
                     <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="finance" groups="kijabe_purchase_ext.purchase_finance_id" />
                     <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="procurement" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
+                    <button name="button_hod" type="object" string="HOD Approval" states="hod" groups="kijabe_purchase_ext.hod_id" />
+
                     <!-- end -->
 
-                    <field name="state" widget="statusbar" statusbar_visible="finance,op,procurement,draft,purchase" readonly="1" />
+                    <field name="state" widget="statusbar" statusbar_visible="hod,procurement,finance,op,draft,purchase" readonly="1" />
                 </header>
                 <sheet>
                     <div class="oe_title">

@@ -41,17 +41,21 @@ class stock_dispense(models.Model):
     @api.multi
     def group_by_location(self):
         department = self.env["purchase.department"].search([['dep_head_id', '=', self.env.user.id]])
-        return {
-            'type': 'ir.actions.act_window',
-            'name': 'Stock balances for '+department[0].name,
-            'view_type': 'form',
-            'view_mode': 'tree,form',
-            'res_model': 'stock.quant',
-            'domain': [('location_id','=',department[0].location.id)],
-            'views': [(False, 'tree'), (False, 'form')],
-            'target': 'current',
-            'context': None,
-        }
+        if len(department)>0:
+            return {
+                'type': 'ir.actions.act_window',
+                'name': 'Stock balances for '+department[0].name,
+                'view_type': 'form',
+                'view_mode': 'tree,form',
+                'res_model': 'stock.quant',
+                'domain': [('location_id','=',department[0].location.id)],
+                'views': [(False, 'tree'), (False, 'form')],
+                'target': 'current',
+                'context': None,
+            }
+        else :
+            raise ValidationError(
+                        'You do not have permission to view this stock level, This is available only for HODs!')
 
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):

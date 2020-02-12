@@ -54,6 +54,11 @@
                         </page>
 
                     </notebook>
+                    <notebook>
+                        <page name="internal_notes" string="Internal Notes">
+                            <field name="notes" placeholder="Internal Notes..." attrs="{'readonly':[('state','in',['draft','cancel'])]}"/>
+                        </page>
+                    </notebook>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers" />

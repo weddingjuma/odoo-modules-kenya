@@ -40,6 +40,12 @@
             <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
                 <field name="x_details"/>
             </xpath>
+            <xpath expr="//field[@name='notes']" position="attributes">
+                <field name="notes" position="attributes">
+                    <attribute name="placeholder">Internal Notes</attribute>
+                    <attribute name="attrs">{'readonly':[('state','in',['draft','cancel'])]}</attribute>
+                </field>
+            </xpath>
         </field>
     </record>
 
@@ -69,7 +75,7 @@
                 <attribute name="statusbar_visible">p_m_approve,o_m_approve,f_m_approve,draft,sent,purchase</attribute>
             </field>
             <button name="button_cancel" position="attributes">
-                <attribute name="states">p_m_approve,o_m_approve,f_m_approve,ceo_approve,draft,to approve,sent,purchase</attribute>
+                <attribute name="states">p_m_approve,o_m_approve,f_m_approve,ceo_approve,draft,to approve,sent</attribute>
             </button>
             <button name="button_confirm" position="before">
                 <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="p_m_approve" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />

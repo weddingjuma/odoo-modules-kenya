@@ -35,7 +35,7 @@ class external_requisition(models.Model):
                        index=True, copy=False, default='New')
     item_ids = fields.One2many(
         'purchase.external.requisition.item', 'ir_item_id')
-    notes = fields.Text('Terms and Conditions')
+    notes = fields.Text('Internal notes')
     company_id = fields.Many2one(
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
     date_approve = fields.Date(

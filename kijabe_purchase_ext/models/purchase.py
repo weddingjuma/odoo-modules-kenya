@@ -47,6 +47,7 @@ class purchase(models.Model):
         ('cancel', 'Cancelled')
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     irf_ids = fields.Many2one("purchase.internal.requisition", "IRF Reference")
+    notes = fields.Text('Internal Notes')
 
     @api.onchange('x_dept_id')
     def _populate_div(self):

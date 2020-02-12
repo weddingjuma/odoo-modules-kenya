@@ -31,7 +31,7 @@ class pharmacy_order(models.Model):
                        index=True, copy=False, default='New')
     item_ids = fields.One2many(
         'pharmacy.order.item', 'ir_item_id', required=True)
-    notes = fields.Text('Terms and Conditions')
+    notes = fields.Text('Internal Notes')
     company_id = fields.Many2one(
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
     date_approve = fields.Date(
@@ -228,6 +228,7 @@ class pharmacy_order_item(models.Model):
     product_qty = fields.Float(string='Quantity To Order', digits=dp.get_precision(
         'Product Unit of Measure'), required=True)
     comment = fields.Text("Comment")
+    notes = fields.Text('Internal Notes')
 
     def _get_pharmacy_categ(self):
         return [('categ_id', 'child_of', self.env['product.category'].search([('name', '=', 'Pharmacy')]).id)]

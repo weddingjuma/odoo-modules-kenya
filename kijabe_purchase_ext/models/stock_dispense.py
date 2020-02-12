@@ -37,6 +37,7 @@ class stock_dispense(models.Model):
     is_patient = fields.Boolean('Is for Patient?')
     is_department = fields.Boolean('Is for department?')
     disp_department = fields.Many2one('purchase.department', 'Department dispensed on')
+    notes = fields.Text('Internal Notes')
 
     @api.multi
     def group_by_location(self):
@@ -224,7 +225,8 @@ class stock_dispense_item(models.Model):
     item_id = fields.Many2one('product.product', string='Item Dispensed')
     available_qty = fields.Float('Balance in Stock', store=True)
     dispensed_qty = fields.Float('Issued Quantity', store=True)
-
+    comment = fields.Text("Comment")
+    
     @api.onchange('item_id')
     def _get_qty(self):
         self.available_qty = self.compute_remain_qty()

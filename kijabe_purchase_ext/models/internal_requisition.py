@@ -33,11 +33,12 @@ class internal_requisition(models.Model):
                        index=True, copy=False, default='New')
     item_ids = fields.One2many(
         'purchase.internal.requisition.item', 'ir_item_id', required=True)
-    notes = fields.Text('Terms and Conditions')
+    notes = fields.Text('Internal Notes')
     company_id = fields.Many2one(
         'res.company', 'Company', default=lambda self: self.env.user.company_id.id, index=1)
     date_approve = fields.Date(
         'Approval Date', readonly=1, index=True, copy=False)
+    wm_feedback = fields.Text('Feedback from warehouse')
 
     @api.onchange('ir_dept_id')
     def _populate_dep_code(self):
@@ -250,6 +251,7 @@ class purchase_internal_requisition_items(models.Model):
     product_qty = fields.Float(string='Quantity To Order', digits=dp.get_precision(
         'Product Unit of Measure'), required=True)
     comment = fields.Text("Comment")
+    
 
     @api.onchange('item_id')
     def _get_qty(self):

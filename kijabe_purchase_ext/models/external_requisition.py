@@ -25,10 +25,9 @@ class external_requisition(models.Model):
         ('sent', 'ERF Sent'),
         ('hod','HOD'),
         ('procurement','Procurement'),
-        ('finance','Finance'),
-        ('op','Operations Head'),        
+        ('op','Operations Head'),  
+        ('finance','Finance'),      
         ('purchase', 'Approved'),
-        ('done', 'Approved & Locked'),
         ('cancel', 'Cancelled')
     ], string='Status', readonly=True, index=True, copy=False, default='draft', track_visibility='onchange')
     name = fields.Char('Reference', required=True,
@@ -91,18 +90,18 @@ class external_requisition(models.Model):
 
     @api.one
     def procurement_manager_approval(self):
+        self.write({'state': 'op','date_approve': fields.Date.context_today(self)})
+        self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
+        return True
+
+    @api.one
+    def operations_manager_approval(self):
         self.write({'state': 'finance','date_approve': fields.Date.context_today(self)})
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
         return True
 
     @api.one
     def financial_manager_approval(self):
-        self.write({'state': 'op','date_approve': fields.Date.context_today(self)})
-        self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
-        return True
-
-    @api.one
-    def operations_manager_approval(self):
         self.button_approve()
         return True
 
@@ -144,9 +143,8 @@ class external_requisition(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To Manager ' + name + ',<br>'
-                       + 'ERF No. ' + po + ' has been created and requires your approval. You can find the details to approve here. '+url})
-
+                       'To Manager ' + str(name) + ',<br>'
+                       + 'ERF No. ' + str(po) + ' has been created and requires your approval. You can find the details to approve here. '+str(url)})
         self.env['mail.mail'].create(values).send()
         return True
 
@@ -174,8 +172,8 @@ class external_requisition(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'ERF No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'ERF No. ' + str(po) + ' has been Approved by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -190,8 +188,8 @@ class external_requisition(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'ERF No. ' + po + ' has been cancelled by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'ERF No. ' + str(po) + ' has been cancelled by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True

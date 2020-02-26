@@ -10,6 +10,7 @@ class division(models.Model):
     _name = "purchase.division"
     name = fields.Char('Name')
     div_code = fields.Char("Code")
+    div_head = fields.Many2one('res.users', 'Division Head')
     department_ids = fields.One2many('purchase.department', 'dep_id')
 
 

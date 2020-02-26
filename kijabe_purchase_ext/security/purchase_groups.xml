@@ -7,7 +7,12 @@
 			<field name="sequence">3</field>
 		</record>
 		<record id="hod_id" model="res.groups">
-				<field name="name">Head of Department </field>
+				<field name="name">Department Head</field>
+				<field name="category_id" ref="kijabe_purchase_ext.module_management" />
+				<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]" />
+		</record>
+		<record id="division_head" model="res.groups">
+				<field name="name">Division Head</field>
 				<field name="category_id" ref="kijabe_purchase_ext.module_management" />
 				<field name="implied_ids" eval="[(4,ref('purchase.group_purchase_user'))]" />
 		</record>

@@ -24,6 +24,7 @@ class external_requisition(models.Model):
         ('draft', 'Draft'),
         ('sent', 'ERF Sent'),
         ('hod','HOD'),
+        ('div','Division Head'),
         ('procurement','Procurement'),
         ('op','Operations Head'),  
         ('finance','Finance'),      
@@ -84,6 +85,14 @@ class external_requisition(models.Model):
     def button_hod(self):
         for order in self:
             if order.state in ['hod']:
+                self.write({'state': 'div', 'date_approve': fields.Date.context_today(self)})
+                self.notifyDivHead(self.ir_dept_id, self.name)
+        return {}
+
+    @api.multi
+    def button_div(self):
+        for order in self:
+            if order.state in ['div']:
                 self.write({'state': 'procurement', 'date_approve': fields.Date.context_today(self)})
                 self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
         return {}
@@ -198,6 +207,13 @@ class external_requisition(models.Model):
     def notifyHod(self, department, irf):
         user = self.env["res.users"].search(
             [['id', '=', department.dep_head_id.id]])
+        self.sendToManager(user.login, irf, user.name)
+        return True
+
+    @api.multi
+    def notifyDivHead(self, department, irf):
+        user = self.env["res.users"].search(
+            [['id', '=', department.dep_id.div_head.id]])
         self.sendToManager(user.login, irf, user.name)
         return True
 

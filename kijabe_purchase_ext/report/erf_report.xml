@@ -6,16 +6,8 @@
             <link rel="stylesheet" href="/kijabe_purchase_ext/static/css/kijabe_po_custom.css" />
         </xpath>
     </template>
-    <!-- template to inherit purchase order report then load a logo to it and apply external css -->
-    <template id="report_po_document_inherit" inherit_id="purchase.report_purchaseorder_document">
-        <xpath expr="//table" position="before">
-            <div class="watermark">
-                <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' %res_company.logo" />
-            </div>
-        </xpath>
-    </template>
     <!-- report -->
-    <template id="purchase_internal_requisition_doc">
+    <template id="purchase_external_requisition_doc">
         <t t-call="report.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-call="report.external_layout">
@@ -25,10 +17,6 @@
                             <div class="col-xs-6">
                                 <strong>Requester information :</strong>
                                 <div t-if="o.ir_dept_id">
-                                    <!-- <p t-if="o.ir_div_id">
-                                        Division:
-                                        <span t-field="o.ir_div_id" />
-                                    </p> -->
                                     <p t-if="o.ir_dept_id">
                                         Department:
                                         <span t-field="o.ir_dept_id" />
@@ -40,14 +28,14 @@
                                 </div>
                             </div>
                         </div>
-                        <h1>Internal Requisition Report</h1>
+                        <h1>External Requisition Report</h1>
                         <div class="row mt32 mb32">
                             <div t-if="o.name" class="col-xs-3">
-                                <strong>IRF Reference:</strong>
+                                <strong>ERF Reference:</strong>
                                 <p t-field="o.name" />
                             </div>
                             <div t-if="o.ir_req_date" class="col-xs-3">
-                                <strong>IRF Date:</strong>
+                                <strong>ERF Date:</strong>
                                 <p t-field="o.ir_req_date" />
                             </div>
                             <div t-if="o.state" class="col-xs-3">
@@ -73,22 +61,22 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr t-foreach="o.item_ids" t-as="irf">
+                                <tr t-foreach="o.item_ids" t-as="erf">
                                     <td>
-                                        <span t-field="irf.item_id" />
+                                        <span t-field="erf.item_id" />
                                     </td>
                                     <td class="text-right">
-                                        <span t-field="irf.product_qty" />
-                                        <span t-field="irf.item_id.uom_id" />
+                                        <span t-field="erf.qty" />
+                                        <span t-field="erf.item_id.uom_id" />
                                     </td>
                                     <td class="text-right">
-                                        <span t-field="irf.comment" />
+                                        <span t-field="erf.comment" />
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                         <div><br/><br/><br/><br/><br/><br/></div>
-                        <!-- <table class="table table-condensed">
+                        <table class="table table-condensed">
                             <thead>
                                 <tr>
                                     <th>
@@ -103,27 +91,25 @@
                                 </tr>
                             </thead>
                             <tbody>
+                            <t t-foreach="request.env['document.action'].search([('document', '=', o.name)])" t-as="obj">
                                 <tr>
-                                    <td class="text-right">
-                                        <span />
+                                    <td class="text-left">
+                                        <span t-field="obj.role"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-field="obj.approver"/>
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-field="obj.date_approved"/>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td class="text-right">
-                                        <span />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-right">
-                                        <span />
-                                    </td>
-                                </tr>
+                            </t>
                             </tbody>
-                        </table> -->
+                        </table>
                     </div>
                 </t>
             </t>
         </t>
     </template>
-    <report id="purchase_internal_requisition_report" string="Internal Requisition" model="purchase.internal.requisition" report_type="qweb-pdf" attachment_use="True" file="kijabe_purchase_ext.purchase_internal_requisition_doc" name="kijabe_purchase_ext.purchase_internal_requisition_doc" />
+    <report id="purchase_external_requisition_report" string="External Requisition" model="purchase.external.requisition" report_type="qweb-pdf" attachment_use="True" file="kijabe_purchase_ext.purchase_external_requisition_doc" name="kijabe_purchase_ext.purchase_external_requisition_doc" />
 </odoo>

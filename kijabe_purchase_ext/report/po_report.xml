@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- template to load external css and inheriting report.minimal_layout functionalities -->
+    <template id="report_kijabe_minimal_layout" inherit_id="report.minimal_layout">
+        <xpath expr="//head" position="inside">
+            <link rel="stylesheet" href="/kijabe_purchase_ext/static/css/kijabe_po_custom.css" />
+        </xpath>
+    </template>
+    <!-- template to inherit purchase order report then load a logo to it and apply external css -->
+    <template id="report_po_document_inherit" inherit_id="purchase.report_purchaseorder_document">
+        <xpath expr="//table" position="before">
+            <div class="watermark">
+                <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' %res_company.logo" />
+            </div>
+        </xpath>
+        <xpath expr="//div[@class='row']" position="after">
+            <div>
+                <center>
+                    <h2>Local Purchase Order</h2>
+                    <u><strong>ACIH/OPS/LG/PUR/FM/003</strong></u>
+                </center>
+            </div>                
+        </xpath>
+        <xpath expr="//div[@class='col-xs-4 pull-right']" position="after">
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>
+                            <strong>#</strong>
+                        </th>
+                        <th>
+                            <strong>Approved by</strong>
+                        </th>
+                        <th>
+                            <strong>Name</strong>
+                        </th>
+                        <th>
+                            <strong>Date</strong>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="request.env['document.action'].search([('document', '=', o.name)])" t-as="obj">
+                        <tr>
+                            <td class="text-left" scope="row">
+                                <span t-raw="obj_index + 1"/>
+                            </td>
+                            <td class="text-left">
+                                <span t-field="obj.role"/>
+                            </td>
+                            <td class="text-left">
+                                <span t-field="obj.approver"/>
+                            </td>
+                            <td class="text-left">
+                                <span t-field="obj.date_approved"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+</odoo>

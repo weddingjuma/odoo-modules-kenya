@@ -69,9 +69,24 @@ class purchase(models.Model):
 
         return super(purchase, self).create(vals)
 
+    def document_saver(self,action,role):
+        _logger.error(self._name)
+        _logger.error(self[0]._name)
+        self.env['document.action'].create({
+                    'name':self.env['ir.sequence'].next_by_code('document.action') or '/',
+                    'model': self._name,
+                    'document': self[0].name,
+                    'action':action,
+                    'approver': self.env.user.name,
+                    'role':role,
+                    'date_approved':fields.Date.context_today(self)
+                })
+        return {}
+
     @api.one
     def executive_director_approval(self):
         super(purchase, self).button_approve()
+        self.document_saver('approve','Executive Director')
         self.notifyInitiator("Executive Director")
         return True
 
@@ -86,6 +101,7 @@ class purchase(models.Model):
                     or (order.company_id.po_double_validation == 'two_step'
                         and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
                     or order.user_has_groups('kijabe_purchase_ext.purchase_director_id'):
+                self.document_saver('approve','Finance Manager')
                 order.button_approve()
                 self.notifyInitiator("Financial Manager")
             else:
@@ -100,6 +116,7 @@ class purchase(models.Model):
     def operations_manager_approval(self):
         self.write({'state': 'f_m_approve',
                     'date_approve': fields.Date.context_today(self)})
+        self.document_saver('approve','Operations Manager')
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
         return True
 
@@ -107,6 +124,7 @@ class purchase(models.Model):
     def procurement_manager_approval(self):
         self.write({'state': 'o_m_approve',
                     'date_approve': fields.Date.context_today(self)})
+        self.document_saver('approve','Procurement Manager')
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_operation_id")
         return True
 

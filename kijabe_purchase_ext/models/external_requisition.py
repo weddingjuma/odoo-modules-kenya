@@ -57,6 +57,8 @@ class external_requisition(models.Model):
                     if item[2]['qty'] <= 0:
                         raise ValidationError(
                             'Please set ordered quantity on -> ' + str(item_id.name)+' !')
+                    elif not item[2]['item_id']:
+                        raise ValidationError('Empty item')
                     else:
                         department = self.env["purchase.department"].search(
                             [['id', '=', vals['ir_dept_id']]])
@@ -81,11 +83,23 @@ class external_requisition(models.Model):
             self.notifyHod(self.ir_dept_id, self.name)
         return {}
 
+    def document_saver(self,action,role):
+        self.env['document.action'].create({
+                    'name':self.env['ir.sequence'].next_by_code('document.action') or '/',
+                    'model':'purchase.external.requisition',
+                    'document': self[0].name,
+                    'action':action,
+                    'approver': self.env.user.name,
+                    'role':role,
+                    'date_approved':fields.Date.context_today(self)
+                })
+        return {}
+
     @api.multi
     def button_hod(self):
         for order in self:
             if order.state in ['hod']:
-                self.write({'state': 'div', 'date_approve': fields.Date.context_today(self)})
+                self.document_saver('approve','Head of Department')
                 self.notifyDivHead(self.ir_dept_id, self.name)
         return {}
 
@@ -94,23 +108,27 @@ class external_requisition(models.Model):
         for order in self:
             if order.state in ['div']:
                 self.write({'state': 'procurement', 'date_approve': fields.Date.context_today(self)})
+                self.document_saver('approve','Division Head')
                 self.notifyUserInGroup("kijabe_purchase_ext.purchase_leader_procurement_id")
         return {}
 
     @api.one
     def procurement_manager_approval(self):
         self.write({'state': 'op','date_approve': fields.Date.context_today(self)})
+        self.document_saver('approve','Procurement Manager')
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
         return True
 
     @api.one
     def operations_manager_approval(self):
         self.write({'state': 'finance','date_approve': fields.Date.context_today(self)})
+        self.document_saver('approve','Operations Manager')
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
         return True
 
     @api.one
     def financial_manager_approval(self):
+        self.document_saver('approve','Finance Manager')
         self.button_approve()
         return True
 
@@ -126,6 +144,7 @@ class external_requisition(models.Model):
     @api.multi
     def button_cancel(self):
         self.write({'state': 'cancel'})
+        self.document_saver('cancel',self.env.user.name)
         self.notifyInitiatorCancel(self.env.user.name)
         return {}
 

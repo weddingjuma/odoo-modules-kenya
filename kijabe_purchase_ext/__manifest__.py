@@ -15,6 +15,8 @@
             'views/stock_dispense_view.xml',
             'views/pharmacy_order_view.xml',
             'views/util_view.xml',
-            'report/report.xml'
+            'report/po_report.xml',
+            'report/irf_report.xml',
+            'report/erf_report.xml'
         ],
 }

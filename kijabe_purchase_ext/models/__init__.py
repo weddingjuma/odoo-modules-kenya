@@ -7,3 +7,4 @@ from . import external_requisition
 from . import stock_dispense
 from . import util_model
 from . import pharmacy_order
+from . import document_action

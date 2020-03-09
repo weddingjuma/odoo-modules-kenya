@@ -57,6 +57,8 @@ class internal_requisition(models.Model):
                     if item[2]['product_qty'] <= 0:
                         raise ValidationError(
                             'Please set ordered quantity on -> ' + str(item_id.name)+' !')
+                    elif not item[2]['item_id']:
+                        raise ValidationError('Empty item')
                     else:
                         department = self.env["purchase.department"].search(
                             [['id', '=', vals['ir_dept_id']]])

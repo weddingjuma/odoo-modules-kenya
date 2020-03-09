@@ -10,3 +10,4 @@ access_pharmacy_order,access_pharmacy_order,model_pharmacy_order,base.group_user
 access_pharmacy_order_item,access_pharmacy_order_item,model_pharmacy_order_item,base.group_user,1,1,1,1
 access_stock_dispense,access_stock_dispense,model_stock_dispense,base.group_user,1,1,1,1
 access_stock_dispense_item,access_stock_dispense_item,model_stock_dispense_item,base.group_user,1,1,1,1
+access_document_action,access_document_action,model_document_action,base.group_user,1,1,1,1

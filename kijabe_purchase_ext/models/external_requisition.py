@@ -99,6 +99,7 @@ class external_requisition(models.Model):
     def button_hod(self):
         for order in self:
             if order.state in ['hod']:
+                self.write({'state': 'div', 'date_approve': fields.Date.context_today(self)})
                 self.document_saver('approve','Head of Department')
                 self.notifyDivHead(self.ir_dept_id, self.name)
         return {}

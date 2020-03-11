@@ -121,8 +121,12 @@ class stock_dispense(models.Model):
 
     @api.multi
     def button_cancel(self):
-        self.write({'state': 'cancel'})
-        self.notifyInitiatorCancel(self.env.user.name)
+        for order in self:
+            if order.notes:
+                self.write({'state': 'cancel'})
+                self.notifyInitiatorCancel(self.env.user.name)
+            else: 
+                raise ValidationError('Please provide some notes while canceling an order!')
         return {}
 
     def _init_stock_move(self):

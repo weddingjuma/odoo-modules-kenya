@@ -13,6 +13,19 @@
                 <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' %res_company.logo" />
             </div>
         </xpath>
+        <xpath expr="//div[@class='col-xs-5 col-xs-offset-1']" position="inside">
+            <div>
+                <br></br><br></br><br></br>
+            </div>
+            <div t-if="o.x_division">
+                <t t-if="o.x_division">
+                    Division:<span t-field="o.x_division" />
+                </t><br></br>
+                <t t-if="o.x_div_code">
+                    Division Code:<span t-field="o.x_div_code" />
+                </t>
+            </div>              
+        </xpath>
         <xpath expr="//div[@class='row']" position="after">
             <div>
                 <center>

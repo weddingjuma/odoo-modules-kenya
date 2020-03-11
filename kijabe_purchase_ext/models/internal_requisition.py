@@ -110,8 +110,12 @@ class internal_requisition(models.Model):
 
     @api.multi
     def button_cancel(self):
-        self.write({'state': 'cancel'})
-        self.notifyInitiatorCancel(self.env.user.name)
+        for order in self:
+            if order.notes:
+                self.write({'state': 'cancel'})
+                self.notifyInitiatorCancel(self.env.user.name)
+            else: 
+                raise ValidationError('Please provide some notes while canceling an order!')
         return {}
 
     def _init_stock_move(self):
@@ -151,12 +155,6 @@ class internal_requisition(models.Model):
         return {}
 
     @api.multi
-    def button_cancel(self):
-        self.write({'state': 'cancel'})
-        self.notifyInitiatorCancel(self.env.user.name)
-        return {}
-
-    @api.multi
     def button_draft(self):
         self.write({'state': 'draft'})
         return {}
@@ -180,8 +178,8 @@ class internal_requisition(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To Manager ' + name + ',<br>'
-                       + 'IRF No. ' + po + ' has been created and requires your approval. You can find the details warehouse here. '+url})
+                       'To Manager ' + str(name) + ',<br>'
+                       + 'IRF No. ' + str(po) + ' has been created and requires your approval. You can find the details warehouse here. '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -211,8 +209,8 @@ class internal_requisition(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'IRF No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'IRF No. ' + str(po) + ' has been Approved by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -227,8 +225,8 @@ class internal_requisition(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'IRF No. ' + po + ' has been cancelled by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'IRF No. ' + str(po) + ' has been cancelled by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True

@@ -139,6 +139,17 @@ class purchase(models.Model):
         return True
 
     @api.multi
+    def button_cancel(self):
+        for order in self:
+            if order.notes:
+                self.write({'state': 'cancel'})
+                self.document_saver('cancel',self.env.user.name)
+                self.notifyInitiatorCancel(self.env.user.name)
+            else: 
+                raise ValidationError('Please provide some notes while canceling an order!')
+        return {}
+
+    @api.multi
     def notifyUserInGroup(self, group_ext_id):
         group = self.env.ref(group_ext_id)
         for user in group.users:
@@ -164,8 +175,8 @@ class purchase(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To Manager ' + name + ',<br>'
-                       + 'LPO No. ' + po + ' has been created and requires your approval. You can find the details to approve here. '+url})
+                       'To Manager ' + str(name) + ',<br>'
+                       + 'LPO No. ' + str(po) + ' has been created and requires your approval. You can find the details to approve here. '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -180,8 +191,8 @@ class purchase(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'LPO No. ' + po + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'LPO No. ' + str(po) + ' has been Approved by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True

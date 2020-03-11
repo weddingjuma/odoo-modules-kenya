@@ -53,6 +53,8 @@ class pharmacy_order(models.Model):
                     if item[2]['product_qty'] <= 0:
                         raise ValidationError(
                             'Please set ordered quantity on -> ' + str(item_id.name)+' !')
+                    elif not item[2]['item_id']:
+                        raise ValidationError('Empty item')
                     else:
                         department = self.env["purchase.department"].search(
                             [['id', '=', vals['ir_dept_id']]])
@@ -66,7 +68,16 @@ class pharmacy_order(models.Model):
                             return super(pharmacy_order, self).create(vals)
         else:
             raise ValidationError('No item found!')
-            return {}
+    
+    @api.multi
+    def button_cancel(self):
+        for order in self:
+            if order.notes:
+                self.write({'state': 'cancel'})
+                self.notifyInitiatorCancel(self.env.user.name)
+            else: 
+                raise ValidationError('Please provide some notes while canceling an order!')
+        return {}
 
     @api.multi
     def button_confirm(self):
@@ -169,8 +180,8 @@ class pharmacy_order(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'Pharmacy No. ' + reference + ' has been Approved by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'Pharmacy No. ' + str(reference) + ' has been Approved by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -185,8 +196,8 @@ class pharmacy_order(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To Manager ' + name + ',<br>'
-                       + 'Pharmacy Order No. ' + reference + ' has been created and requires your approval. You can find the details to approve here. '+url})
+                       'To Manager ' + str(name) + ',<br>'
+                       + 'Pharmacy Order No. ' + str(reference) + ' has been created and requires your approval. You can find the details to approve here. '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True
@@ -201,8 +212,8 @@ class pharmacy_order(models.Model):
         values.update({'email_from': "odoomail.service@gmail.com"})
         values.update({'email_to': recipient})
         values.update({'body_html':
-                       'To ' + name + ',<br>'
-                       + 'Pharmacy order No. ' + reference + ' has been cancelled by ' + str(approver)+'. You can find the details: '+url})
+                       'To ' + str(name) + ',<br>'
+                       + 'Pharmacy order No. ' + str(reference) + ' has been cancelled by ' + str(approver)+'. You can find the details: '+str(url)})
 
         self.env['mail.mail'].create(values).send()
         return True

@@ -81,6 +81,7 @@
                 <button name="procurement_manager_approval" type="object" string="Procurement Manager Approval" states="p_m_approve" groups="kijabe_purchase_ext.purchase_leader_procurement_id" />
                 <button name="operations_manager_approval" type="object" string="Operations Manager Approval" states="o_m_approve" groups="kijabe_purchase_ext.purchase_operation_id" />
                 <button name="financial_manager_approval" type="object" string="Financial Manager Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_finance_id" />
+                <button name="chief_accountant_approval" type="object" string="Chief Accountant Approval" states="f_m_approve" groups="kijabe_purchase_ext.purchase_chief_acc" />
                 <button name="executive_director_approval" type="object" string="Executive Director Approval" states="ceo_approve" groups="kijabe_purchase_ext.purchase_director_id" />
             </button>
         </field>

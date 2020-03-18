@@ -38,10 +38,10 @@ class purchase(models.Model):
     state = fields.Selection([
         ('draft', 'RFQ'),
         ('sent', 'RFQ Sent'),
-        ('p_m_approve', 'To Procurement'),
-        ('o_m_approve', 'To Operations'),
-        ('f_m_approve', 'To Finance'),
-        ('ceo_approve', 'To ED'),
+        ('p_m_approve', 'Procurement'),
+        ('o_m_approve', 'Operations'),
+        ('f_m_approve', 'Finance'),
+        ('ceo_approve', 'ED'),
         ('purchase', 'Purchase Order'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled')
@@ -70,8 +70,6 @@ class purchase(models.Model):
         return super(purchase, self).create(vals)
 
     def document_saver(self,action,role):
-        _logger.error(self._name)
-        _logger.error(self[0]._name)
         self.env['document.action'].create({
                     'name':self.env['ir.sequence'].next_by_code('document.action') or '/',
                     'model': self._name,
@@ -91,6 +89,30 @@ class purchase(models.Model):
         return True
 
     @api.one
+    def chief_accountant_approval(self):
+
+        for order in self:
+            if order.state != 'f_m_approve':
+                continue
+            order._add_supplier_to_product()
+            # Deal with double validation process
+            if order.company_id.po_double_validation == 'one_step'\
+                    or (order.company_id.po_double_validation == 'two_step'
+                        and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
+                    or order.user_has_groups('kijabe_purchase_ext.purchase_director_id'):
+                
+                self.document_saver('approve','Chief Accountant')                
+                order.button_approve()
+                self.notifyInitiator("Chief Accountant")
+            else:
+                order.write({'state': 'ceo_approve',
+                             'date_approve': fields.Date.context_today(self)})
+                self.document_saver('approve','Chief Accountant')
+                self.notifyUserInGroup(
+                    "kijabe_purchase_ext.purchase_director_id")
+
+        return True
+    @api.one
     def financial_manager_approval(self):
         for order in self:
             if order.state != 'f_m_approve':
@@ -101,12 +123,14 @@ class purchase(models.Model):
                     or (order.company_id.po_double_validation == 'two_step'
                         and order.amount_total < self.env.user.company_id.currency_id.compute(order.company_id.po_double_validation_amount, order.currency_id))\
                     or order.user_has_groups('kijabe_purchase_ext.purchase_director_id'):
+                
                 self.document_saver('approve','Finance Manager')
                 order.button_approve()
                 self.notifyInitiator("Financial Manager")
             else:
                 order.write({'state': 'ceo_approve',
                              'date_approve': fields.Date.context_today(self)})
+                self.document_saver('approve','Finance Manager')
                 self.notifyUserInGroup(
                     "kijabe_purchase_ext.purchase_director_id")
 
@@ -118,6 +142,7 @@ class purchase(models.Model):
                     'date_approve': fields.Date.context_today(self)})
         self.document_saver('approve','Operations Manager')
         self.notifyUserInGroup("kijabe_purchase_ext.purchase_finance_id")
+        self.notifyUserInGroup("kijabe_purchase_ext.purchase_chief_acc")
         return True
 
     @api.one

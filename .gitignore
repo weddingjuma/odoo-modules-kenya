@@ -3,9 +3,9 @@
 /*/
 !/kijabe_purchase_ext/
 !/stock_no_negative/
-# !/cure_uganda_ext/
 !LICENSE
 !README.md
+*.pyc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

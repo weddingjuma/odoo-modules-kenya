@@ -15,21 +15,20 @@
         </xpath>
         <xpath expr="//div[@class='col-xs-5 col-xs-offset-1']" position="inside">
             <div>
-                <br></br><br></br><br></br>
+                <br></br><br></br>
             </div>
             <div t-if="o.x_division">
-                <t t-if="o.x_division">
-                    Division:<span t-field="o.x_division" />
-                </t><br></br>
-                <t t-if="o.x_div_code">
-                    Division Code:<span t-field="o.x_div_code" />
+                <t t-foreach="request.env['purchase.division'].search([('div_code', '=', o.x_div_code)])" t-as="div">
+                    <span>Division Code: <strong t-field="div.div_code" /></span>
+                    <br></br>
+                    <span>Division Head: <strong t-field="div.div_head" /></span>
                 </t>
             </div>              
         </xpath>
         <xpath expr="//div[@class='row']" position="after">
             <div>
                 <center>
-                    <h2>Local Purchase Order</h2>
+                    <h2>LOCAL PURCHASE ORDER</h2>
                     <u><strong>ACIH/OPS/LG/PUR/FM/003</strong></u>
                 </center>
             </div>                

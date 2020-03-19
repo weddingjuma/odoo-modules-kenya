@@ -43,7 +43,7 @@
             <xpath expr="//field[@name='notes']" position="attributes">
                 <field name="notes" position="attributes">
                     <attribute name="placeholder">Internal Notes</attribute>
-                    <attribute name="attrs">{'readonly':[('state','in',['draft','cancel'])]}</attribute>
+                    <attribute name="attrs">{'readonly':[('state','in',['cancel'])]}</attribute>
                 </field>
             </xpath>
         </field>

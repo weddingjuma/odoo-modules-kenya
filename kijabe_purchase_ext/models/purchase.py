@@ -189,6 +189,30 @@ class purchase(models.Model):
             [['id', '=', self[0].create_uid.id]])
         self.sendToInitiator(user.login, self[0].name, user.name, approver)
         return True
+    
+    @api.multi
+    def notifyInitiatorCancel(self, approver):
+        user = self.env["res.users"].search(
+            [['id', '=', self[0].create_uid.id]])
+        self.sendToInitiatorCancel(
+            user.login, self[0].name, user.name, approver)
+        return True
+
+    @api.multi
+    def sendToInitiatorCancel(self, recipient, po, name, approver):
+        url = self.env['ir.config_parameter'].get_param('web.base.url')
+        mail_pool = self.env['mail.mail']
+        values = {}
+        values.update({'subject': 'Purchase Order #' +
+                       po + ' cancelled'})
+        values.update({'email_from': "odoomail.service@gmail.com"})
+        values.update({'email_to': recipient})
+        values.update({'body_html':
+                       'To ' + str(name) + ',<br>'
+                       + 'LPO No. ' + str(po) + ' has been cancelled by ' + str(approver)+'. You can find the details: '+str(url)})
+
+        self.env['mail.mail'].create(values).send()
+        return True
 
     @api.multi
     def sendToManager(self, recipient, po, name):

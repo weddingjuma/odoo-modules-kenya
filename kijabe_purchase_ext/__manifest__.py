@@ -17,6 +17,7 @@
             'views/util_view.xml',
             'report/po_report.xml',
             'report/irf_report.xml',
-            'report/erf_report.xml'
+            'report/erf_report.xml',
+            'report/delivery_slip_report.xml'
         ],
 }

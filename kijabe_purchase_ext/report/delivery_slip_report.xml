@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- template to load external css and inheriting report.minimal_layout functionalities -->
+    <template id="report_kijabe_minimal_layout" inherit_id="report.minimal_layout">
+        <xpath expr="//head" position="inside">
+            <link rel="stylesheet" href="/kijabe_purchase_ext/static/css/kijabe_po_custom.css" />
+        </xpath>
+    </template>
+    <!-- template to inherit purchase order report then load a logo to it and apply external css -->
+    <template id="report_delivery_document_inherit_po_line" inherit_id="stock.report_delivery_document">
+        <xpath expr="//table" position="before">
+            <div class="watermark">
+                <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' %res_company.logo" />
+            </div>
+        </xpath>
+        
+        <xpath expr="//th[@t-if='o.origin']" position="after">
+            <th t-if="o.origin"><strong>PO Reference</strong></th>
+        </xpath>        
+        <xpath expr="//td[@t-if='o.origin']" position="after">
+            <td t-if="o.origin">
+                <span t-field="o.origin"/>
+            </td>
+            <t t-set="amount_untaxed" t-value='0'/>
+            <t t-set="price_tax" t-value='0'/>
+        </xpath>
+
+        <xpath expr="//table[3]/thead/tr" position="inside">
+            <th class="text-right"><strong>Unit Price</strong></th>
+            <th class="text-right"><strong>Taxes</strong></th>
+            <th class="text-right"><strong>Net Price</strong></th>
+        </xpath>
+        <xpath expr="//table[3]/tbody/tr" position="inside">
+            <td class="text-right">
+                <t t-set="unit_price" t-value="pack_operation.linked_move_operation_ids[0].move_id.purchase_line_id.price_unit"/>
+                <span t-esc="unit_price"/>
+            </td>
+            <td class="text-right">
+                <t t-set="tax" t-value="', '.join(map(lambda x: x.name, pack_operation.linked_move_operation_ids[0].move_id.purchase_line_id.taxes_id))"/>
+                <t t-set="tax_amount" t-value="pack_operation.linked_move_operation_ids[0].move_id.purchase_line_id.taxes_id.amount" t-options='{"widget": "float", "precision": 2}'/>
+                <span t-esc="tax"/>
+            </td>
+            <td class="text-right">
+                <t t-set="price_subtotal"
+                    t-value="pack_operation.linked_move_operation_ids[0].move_id.purchase_line_id.price_unit * pack_operation.linked_move_operation_ids[0].move_id.purchase_line_id.qty_received"/>
+                <span t-esc="price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                <t t-set="amount_untaxed" t-value='amount_untaxed + price_subtotal' t-options='{"widget": "float", "precision": 2}'/>
+                <t t-set="price_tax" t-value="price_tax + (amount_untaxed * tax_amount/100)"/>
+            </td>
+        </xpath>
+         
+
+        <xpath expr="//table[3]" position="after">
+            <div class="row">
+                <div class="col-xs-4 pull-right">
+                    <table class="table table-condensed">
+                        <t t-set="amount_total" t-value="amount_untaxed + price_tax"/>
+                        <tr class="border-black">
+                            <td><strong>Total Without Taxes</strong></td>
+                            <td class="text-right">
+                                <span t-esc="amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Taxes</td>
+                            <td class="text-right">
+                                <span t-esc="price_tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+                        <tr class="border-black">
+                            <td><strong>Total</strong></td>
+                            <td class="text-right">
+                                <span t-esc="amount_total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

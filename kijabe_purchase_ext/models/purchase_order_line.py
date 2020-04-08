@@ -14,7 +14,8 @@ class purchase_order_line(models.Model):
     def conc_name_uom(self):
         for line in self:
             line.x_details = (line.name or '')+' /'+(line.product_uom.name or '')
-    
+            
+    #Compute purchase.order.line total amounts based on qty received if available
     @api.depends('product_qty', 'price_unit', 'taxes_id')
     def _compute_amount(self):
         for line in self:
@@ -24,7 +25,6 @@ class purchase_order_line(models.Model):
                 'price_total': taxes['total_included'],
                 'price_subtotal': taxes['total_excluded'],
             })
-            _logger.error('=================Total: '+str(line.qty_received if line.qty_received else line.product_qty))
 
 class StockMove(models.Model):
     _inherit = 'stock.picking'

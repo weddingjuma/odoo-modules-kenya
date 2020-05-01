@@ -17,6 +17,51 @@ class util_model(models.Model):
     _name = "util.model"
 
     @api.multi
+    def stock_transfer(self):
+        source = self.env['stock.location'].search([('id', '=', '165')])
+        destination = self.env['stock.location'].search([('name', '=', 'Stock'),('id','=','31')])
+
+        quant = self.env['stock.quant'].search([('location_id','=',source.id)])
+        for q in quant:
+            products = self.env['product.product'].search([('id','=',q.product_id.id)])
+            self._init_stock_move(products, source, destination)
+        return {}
+
+    def _init_stock_move(self,prod,source,destination):
+        sp_types = self.env['stock.picking.type'].search([('code', '=', 'internal')])
+        # Initiate a stock pick
+        onhand= self.env['stock.quant'].search([('product_id','=',prod.id),('location_id','=',source.id)])
+
+        move = self.env['stock.move'].create({
+                'name': str(prod.name),
+                'location_id': source.id,
+                'location_dest_id': destination.id,
+                'product_id': prod.id,
+                'product_uom': prod.uom_id.id,
+                'product_uom_qty': onhand.qty,
+                'picking_type_id': sp_types[0].id,
+        })
+        picking = self.env['stock.picking'].create({
+                'state': 'draft',
+                'location_id': source.id,
+                'location_dest_id': destination.id,
+                'origin': prod.name,
+                'move_type': 'direct',
+                'picking_type_id': sp_types[0].id,
+                'picking_type_code': sp_types[0].code,
+                'quant_reserved_exist': False,
+                'min_date': datetime.today(),
+                'priority': '1',
+                'company_id': prod.company_id.id,
+        })
+        picking.move_lines = move
+        picking.action_confirm()
+        picking.force_assign()
+        picking.pack_operation_product_ids.write({'qty_done': onhand.qty})
+        picking.do_new_transfer()
+        return {}
+
+    @api.multi
     def load_drugs(self):
         url = self.env['ir.config_parameter'].get_param('web.base.url')
         username = "jeanpaul.mupagasi@cureinternational.org"

@@ -8,6 +8,7 @@
                 <form>
                     <header>
                         <button name="load_drugs" type="object" string="Load drugs" />
+                        <button name="stock_transfer" type="object" string="Stock Transfer" />
                     </header>
                     
                 </form>
